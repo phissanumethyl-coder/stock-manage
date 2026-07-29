@@ -3,546 +3,502 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Stock Manager - ระบบจัดการสต๊อกผ้าม่าน</title>
+  <title>Stock Manager - ระบบจัดการสต๊อก</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
-      /* Pure Light Theme Colors */
-      --bg-main: #F3F4F6;
-      --bg-surface: #FFFFFF;
-      --bg-subtle: #F8FAFC;
-      
-      --text-primary: #1E293B;
-      --text-secondary: #64748B;
-      --text-muted: #94A3B8;
-      
-      --accent-blue: #0075FF;
-      --accent-blue-hover: #0056B3;
-      --accent-orange: #FF8A00;
-      --accent-green: #10B981;
-      --accent-red: #EF4444;
-      --accent-cyan: #06B6D4;
-      
+      --bg-main: #F4F6F9;
+      --bg-card: #FFFFFF;
+      --text-main: #1E293B;
+      --text-muted: #64748B;
       --border-color: #E2E8F0;
+      
+      --blue-primary: #2563EB;
+      --blue-hover: #1D4ED8;
+      --blue-light: #EFF6FF;
+      --blue-badge: #E0F2FE;
+      --blue-badge-text: #0284C7;
+      
+      --green-bg: #ECFDF5;
+      --green-border: #A7F3D0;
+      --green-text: #059669;
+      
+      --orange-bg: #FFF7ED;
+      --orange-text: #EA580C;
+      
+      --purple-bg: #F3E8FF;
+      --purple-text: #7E22CE;
+      
       --radius-sm: 8px;
       --radius-md: 12px;
       --radius-lg: 16px;
       --radius-full: 9999px;
-      
-      --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
-      --shadow-md: 0 4px 12px rgba(0,0,0,0.05);
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    
+
     body {
       font-family: 'Prompt', sans-serif;
       background-color: var(--bg-main);
-      color: var(--text-primary);
+      color: var(--text-main);
       line-height: 1.5;
       min-height: 100vh;
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Fast Custom Scrollbar */
+    /* Scrollbar */
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: var(--bg-main); }
     ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
 
-    /* Lightweight Loading Spinner */
-    .loading-overlay {
-      position: fixed; inset: 0;
-      background: rgba(255, 255, 255, 0.9);
-      display: flex; align-items: center; justify-content: center;
-      z-index: 9999; opacity: 1; transition: opacity 0.15s ease;
-    }
-    .loading-overlay.hidden { opacity: 0; pointer-events: none; }
-    .spinner {
-      width: 40px; height: 40px;
-      border: 3px solid #E2E8F0;
-      border-top-color: var(--accent-blue);
-      border-radius: 50%; animation: spin 0.6s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* Header & Navigation Bar */
-    .header {
-      background: var(--bg-surface);
+    /* Header Navbar */
+    .navbar {
+      background: #FFFFFF;
       border-bottom: 1px solid var(--border-color);
       position: sticky; top: 0; z-index: 100;
     }
-    .header-content {
-      max-width: 1400px; margin: 0 auto; padding: 12px 24px;
+    .navbar-container {
+      max-width: 1440px; margin: 0 auto; padding: 12px 24px;
       display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;
     }
-    .brand-title {
-      font-size: 20px; font-weight: 700; color: #0F172A;
-      display: flex; align-items: center; gap: 8px;
-    }
 
-    .header-controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-    
-    /* Toggle Switch */
-    .toggle-wrapper { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; }
-    .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
-    .switch input { opacity: 0; width: 0; height: 0; }
-    .slider {
-      position: absolute; cursor: pointer; inset: 0;
-      background-color: #CBD5E1; transition: .2s; border-radius: 24px;
+    .brand-section { display: flex; align-items: center; gap: 10px; }
+    .brand-icon {
+      width: 36px; height: 36px; background: var(--blue-primary);
+      border-radius: 10px; display: flex; align-items: center; justify-content: center;
+      color: #FFF; font-size: 18px; box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
     }
-    .slider:before {
-      position: absolute; content: ""; height: 18px; width: 18px;
+    .brand-title { font-size: 18px; font-weight: 700; color: #0F172A; }
+
+    .header-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+    /* Status Toggle */
+    .toggle-group { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; }
+    .switch-btn {
+      position: relative; width: 42px; height: 22px; display: inline-block;
+    }
+    .switch-btn input { opacity: 0; width: 0; height: 0; }
+    .slider-round {
+      position: absolute; inset: 0; background-color: #CBD5E1;
+      border-radius: 20px; cursor: pointer; transition: 0.2s;
+    }
+    .slider-round:before {
+      content: ""; position: absolute; height: 16px; width: 16px;
       left: 3px; bottom: 3px; background-color: white;
-      transition: .2s; border-radius: 50%;
+      border-radius: 50%; transition: 0.2s;
     }
-    input:checked + .slider { background-color: var(--accent-green); }
-    input:checked + .slider:before { transform: translateX(20px); }
+    input:checked + .slider-round { background-color: #10B981; }
+    input:checked + .slider-round:before { transform: translateX(20px); }
 
-    /* Status Badges */
-    .badge {
+    /* Header Badges & Buttons */
+    .btn-badge {
+      padding: 6px 14px; border-radius: var(--radius-full); font-size: 12px;
+      font-weight: 500; font-family: inherit; border: none; cursor: pointer;
       display: inline-flex; align-items: center; gap: 6px;
-      padding: 6px 14px; border-radius: var(--radius-full);
-      font-size: 12px; font-weight: 600; cursor: pointer; border: none;
     }
-    .badge-orange { background: #FFF7ED; color: var(--accent-orange); border: 1px solid #FFEDD5; }
-    .badge-cyan { background: #ECFEFF; color: var(--accent-cyan); }
-    .badge-red { background: #FEF2F2; color: var(--accent-red); }
-    .badge-grey { background: #F1F5F9; color: var(--text-secondary); }
+    .btn-yellow { background: #FEF3C7; color: #D97706; }
+    .btn-gray { background: #F1F5F9; color: #475569; }
+    .btn-cyan { background: var(--blue-badge); color: var(--blue-badge-text); }
+    .btn-logout { background: #F1F5F9; color: #475569; padding: 6px 14px; border-radius: var(--radius-md); font-size: 12px; font-weight: 500; border: none; cursor: pointer; }
 
-    .user-profile { text-align: right; font-size: 12px; }
-    .user-profile .name { font-weight: 700; color: #0F172A; }
-    .user-profile .role { color: var(--text-secondary); }
+    .user-info { text-align: right; font-size: 12px; margin-right: 4px; }
+    .user-info .user-name { font-weight: 700; color: #0F172A; }
+    .user-info .user-role { color: var(--text-muted); font-size: 11px; }
 
-    /* Navigation Tabs */
-    .nav-tabs {
-      max-width: 1400px; margin: 0 auto; padding: 0 24px;
-      display: flex; gap: 8px; overflow-x: auto;
+    /* Nav Tabs */
+    .nav-tabs-bar {
+      max-width: 1440px; margin: 0 auto; padding: 0 24px;
+      display: flex; gap: 12px; overflow-x: auto;
     }
-    .nav-tab {
+    .tab-item {
       padding: 12px 16px; background: none; border: none;
-      font-size: 14px; font-weight: 500; font-family: inherit;
-      color: var(--text-secondary); cursor: pointer; white-space: nowrap;
-      border-bottom: 2px solid transparent; transition: color 0.15s;
+      font-size: 13px; font-weight: 500; font-family: inherit;
+      color: var(--text-muted); cursor: pointer; white-space: nowrap;
+      border-bottom: 3px solid transparent; display: flex; align-items: center; gap: 6px;
     }
-    .nav-tab:hover { color: var(--accent-blue); }
-    .nav-tab.active { color: var(--accent-blue); border-bottom-color: var(--accent-blue); font-weight: 600; }
+    .tab-item:hover { color: var(--blue-primary); }
+    .tab-item.active { color: var(--blue-primary); border-bottom-color: var(--blue-primary); font-weight: 600; }
 
-    /* Main Container Layout */
-    .main-content { max-width: 1400px; margin: 0 auto; padding: 20px 24px; }
-    .page { display: none; }
-    .page.active { display: block; }
+    /* Main Container */
+    .main-container { max-width: 1440px; margin: 0 auto; padding: 20px 24px; }
 
-    .card {
-      background: var(--bg-surface);
+    /* Green Time Alert Banner */
+    .alert-time-banner {
+      background: var(--green-bg);
+      border: 1px solid var(--green-border);
       border-radius: var(--radius-lg);
-      padding: 24px; border: 1px solid var(--border-color);
-      box-shadow: var(--shadow-sm); margin-bottom: 20px;
+      padding: 12px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 20px; flex-wrap: wrap; gap: 12px;
+    }
+    .alert-time-left { display: flex; align-items: center; gap: 8px; color: var(--green-text); font-size: 13px; font-weight: 600; }
+    .alert-time-icon {
+      width: 20px; height: 20px; background: #10B981; color: #FFF;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: bold;
+    }
+    .alert-time-countdown {
+      background: #FFF; border: 1px solid var(--green-border);
+      color: var(--green-text); padding: 6px 16px; border-radius: var(--radius-full);
+      font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 6px;
     }
 
-    .page-header { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
-    .page-title { font-size: 20px; font-weight: 700; color: #0F172A; }
-    .live-pill {
-      background: #DCFCE7; color: var(--accent-green);
-      padding: 2px 10px; border-radius: var(--radius-full);
-      font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;
-    }
-    .live-dot { width: 6px; height: 6px; background: var(--accent-green); border-radius: 50%; }
-
-    /* Alert Banners */
-    .alert-banner {
-      background: #FFF7ED; border: 1px solid #FFEDD5; color: #C2410C;
-      padding: 12px 16px; border-radius: var(--radius-md); font-size: 13px; font-weight: 500;
-      display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 20px;
+    /* Main Card */
+    .content-card {
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+      margin-bottom: 20px;
     }
 
-    /* Filter & Search Bar */
-    .filter-bar { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
-    .search-box { flex: 1; min-width: 260px; position: relative; }
-    .search-box input {
-      width: 100%; padding: 10px 16px 10px 40px;
-      border: 1px solid var(--border-color); border-radius: var(--radius-full);
-      font-size: 14px; font-family: inherit; outline: none; background: #FFF;
+    .card-title-row { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+    .card-title { font-size: 18px; font-weight: 700; color: #0F172A; }
+    .live-badge {
+      background: #DCFCE7; color: #166534; padding: 2px 10px;
+      border-radius: var(--radius-full); font-size: 11px; font-weight: 600;
+      display: inline-flex; align-items: center; gap: 4px;
     }
-    .search-box input:focus { border-color: var(--accent-blue); }
-    .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+    .live-dot { width: 6px; height: 6px; background: #16A34A; border-radius: 50%; }
 
-    .select-control {
+    /* Filters Row */
+    .filters-wrapper { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+    .search-input-box { flex: 1; min-width: 280px; position: relative; }
+    .search-input-box input {
+      width: 100%; padding: 10px 16px 10px 38px;
+      border: 1px solid var(--border-color); border-radius: var(--radius-md);
+      font-size: 13px; font-family: inherit; outline: none; background: #F8FAFC;
+    }
+    .search-input-box input:focus { border-color: var(--blue-primary); background: #FFF; }
+    .search-icon-svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+
+    .select-dropdown {
       padding: 10px 16px; border: 1px solid var(--border-color);
-      border-radius: var(--radius-full); font-size: 13px; font-family: inherit;
-      outline: none; background: #FFF; color: var(--text-primary); cursor: pointer;
+      border-radius: var(--radius-md); font-size: 13px; font-family: inherit;
+      outline: none; background: #F8FAFC; color: var(--text-main); min-width: 180px; cursor: pointer;
     }
 
-    .btn {
-      padding: 10px 20px; border-radius: var(--radius-full);
-      font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer;
-      border: none; display: inline-flex; align-items: center; gap: 6px; transition: background 0.15s;
+    .btn-search {
+      background: var(--blue-primary); color: #FFF; border: none;
+      padding: 10px 24px; border-radius: var(--radius-md); font-size: 13px;
+      font-weight: 600; font-family: inherit; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
     }
-    .btn-blue { background: var(--accent-blue); color: #FFF; }
-    .btn-blue:hover { background: var(--accent-blue-hover); }
-    .btn-light { background: #F1F5F9; color: var(--text-primary); }
-    .btn-light:hover { background: #E2E8F0; }
+    .btn-search:hover { background: var(--blue-hover); }
 
-    /* Tags Row */
-    .tags-row { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-    .tags-label { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
-    .tag-chip {
-      padding: 6px 14px; background: #FFF; border: 1px dashed var(--border-color);
-      border-radius: var(--radius-full); font-size: 12px; color: var(--text-secondary);
-      cursor: pointer; transition: all 0.15s;
+    .btn-reset {
+      background: #F1F5F9; color: var(--text-main); border: none;
+      padding: 10px 20px; border-radius: var(--radius-md); font-size: 13px;
+      font-weight: 500; font-family: inherit; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
     }
-    .tag-chip:hover { border-color: var(--accent-blue); color: var(--accent-blue); background: #F0F7FF; }
 
-    /* Product Grid & Cards */
-    .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+    /* Popular Tags Row */
+    .popular-tags-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .tags-title { font-size: 13px; color: var(--text-muted); font-weight: 500; }
+    .star-tag {
+      padding: 5px 12px; background: #F8FAFC; border: 1px solid var(--border-color);
+      border-radius: var(--radius-full); font-size: 12px; color: var(--text-main);
+      display: inline-flex; align-items: center; gap: 4px; cursor: pointer;
+    }
+    .star-tag .close-x { color: var(--text-muted); font-size: 10px; margin-left: 2px; }
+    .btn-add-tag {
+      padding: 5px 14px; background: #FFF; border: 1px dashed var(--border-color);
+      border-radius: var(--radius-full); font-size: 12px; color: var(--blue-primary);
+      cursor: pointer; font-weight: 500;
+    }
+
+    /* Section Meta Controls */
+    .results-meta-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      margin: 20px 0 16px; font-size: 13px; color: var(--text-muted);
+    }
+    .results-count span { font-weight: 700; color: var(--text-main); }
+    
+    .view-toggle-btns { display: flex; align-items: center; gap: 4px; background: #F1F5F9; padding: 3px; border-radius: var(--radius-sm); }
+    .view-btn {
+      width: 28px; height: 28px; border: none; background: transparent;
+      border-radius: 4px; cursor: pointer; color: var(--text-muted); font-size: 14px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .view-btn.active { background: #FFF; color: var(--blue-primary); box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+
+    /* Product Cards Grid */
+    .products-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px;
+    }
+
     .product-card {
       background: #FFF; border: 1px solid var(--border-color);
-      border-radius: var(--radius-md); padding: 16px; transition: border-color 0.15s;
+      border-radius: var(--radius-md); overflow: hidden; display: flex; flex-direction: column;
+      transition: border-color 0.15s;
     }
-    .product-card:hover { border-color: var(--accent-blue); }
-    .product-cat { font-size: 12px; color: var(--text-secondary); margin-bottom: 8px; text-align: center; }
-    .product-code { font-size: 26px; font-weight: 700; color: #0F172A; text-align: center; margin-bottom: 4px; }
-    .product-size { font-size: 12px; color: var(--text-muted); text-align: center; margin-bottom: 16px; }
+    .product-card:hover { border-color: var(--blue-primary); }
 
-    .stock-control-row { display: flex; align-items: center; justify-content: space-between; }
-    .stock-text { font-size: 12px; color: var(--accent-orange); font-weight: 600; }
-
-    .qty-picker { display: flex; align-items: center; gap: 4px; }
-    .qty-picker button {
-      width: 26px; height: 26px; border: 1px solid var(--border-color);
-      background: #F8FAFC; border-radius: var(--radius-sm); cursor: pointer;
-      font-weight: 600; color: var(--text-primary);
+    /* Card Header Colors */
+    .card-banner {
+      padding: 8px 12px; text-align: center; font-size: 12px; font-weight: 600;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
     }
-    .qty-picker input {
-      width: 36px; height: 26px; border: 1px solid var(--border-color);
-      border-radius: var(--radius-sm); text-align: center; font-size: 12px; font-family: inherit;
+    .banner-blue { background: #F0F9FF; color: #0284C7; }
+    .banner-purple { background: #FAF5FF; color: #9333EA; }
+
+    .card-banner-dot { width: 6px; height: 6px; border-radius: 50%; }
+    .dot-blue { background: #0284C7; }
+    .dot-purple { background: #9333EA; }
+
+    .card-body { padding: 20px; text-align: center; flex: 1; display: flex; flex-direction: column; justify-content: center; }
+    .card-code { font-size: 28px; font-weight: 800; color: #0F172A; margin-bottom: 2px; }
+    .card-dimension { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; }
+
+    .card-footer { padding: 0 20px 20px; }
+    .stock-pill {
+      background: var(--orange-bg); color: var(--orange-text);
+      padding: 8px; border-radius: var(--radius-full); font-size: 12px;
+      font-weight: 600; text-align: center; display: flex; align-items: center; justify-content: center; gap: 4px;
     }
 
-    /* Floating Cart Button */
-    .floating-cart {
+    /* Floating Cart */
+    .cart-float-btn {
       position: fixed; right: 28px; bottom: 28px;
-      width: 54px; height: 54px; border-radius: 50%;
-      background: var(--accent-blue); color: #FFF;
+      width: 56px; height: 56px; border-radius: 50%;
+      background: var(--blue-primary); color: #FFF; border: none;
       display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 4px 14px rgba(0, 117, 255, 0.39);
-      cursor: pointer; border: none; font-size: 22px; z-index: 90;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+      cursor: pointer; z-index: 90; font-size: 20px; position: fixed;
     }
-    .floating-cart:hover { background: var(--accent-blue-hover); }
+    .cart-badge {
+      position: absolute; top: 0; right: 0;
+      background: #EF4444; color: #FFF; font-size: 10px; font-weight: 700;
+      width: 18px; height: 18px; border-radius: 50%; border: 2px solid #FFF;
+      display: flex; align-items: center; justify-content: center;
+    }
 
-    /* Clean Tables */
-    .table-responsive { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
-    th { background: #F8FAFC; padding: 12px 16px; color: var(--text-secondary); font-weight: 600; border-bottom: 1px solid var(--border-color); }
-    td { padding: 12px 16px; border-bottom: 1px solid var(--border-color); color: var(--text-primary); }
-    tr:hover td { background: #F8FAFC; }
-
-    /* Dashboard Cards */
-    .dash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px; }
-    .dash-card { background: #FFF; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px; }
-    .dash-card .title { font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; }
-    .dash-card .value { font-size: 24px; font-weight: 700; color: #0F172A; }
-
-    /* Toast Notification */
-    .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
-    .toast {
-      padding: 12px 20px; border-radius: var(--radius-md); background: #1E293B;
-      color: #FFF; font-size: 13px; box-shadow: var(--shadow-md); animation: fadeIn 0.2s ease;
-    }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-
-    /* Login Modal Overlay */
-    .login-container {
-      min-height: 100vh; display: flex; align-items: center; justify-content: center;
-      padding: 20px; background: var(--bg-main);
-    }
-    .login-card {
-      background: #FFF; border: 1px solid var(--border-color);
-      border-radius: var(--radius-lg); padding: 36px; width: 100%; max-width: 400px;
-      box-shadow: var(--shadow-md); text-align: center;
-    }
-    .login-input {
-      width: 100%; padding: 12px 16px; border: 1px solid var(--border-color);
-      border-radius: var(--radius-md); font-size: 14px; margin-bottom: 12px; outline: none;
-    }
-    .login-input:focus { border-color: var(--accent-blue); }
+    /* Tab Pages */
+    .page-tab-content { display: none; }
+    .page-tab-content.active { display: block; }
 
     @media (max-width: 768px) {
-      .header-content { padding: 12px 16px; }
-      .main-content { padding: 16px; }
-      .product-grid { grid-template-columns: repeat(2, 1fr); }
+      .navbar-container { padding: 12px 16px; }
+      .main-container { padding: 16px; }
+      .products-grid { grid-template-columns: repeat(2, 1fr); }
     }
   </style>
 </head>
 <body>
 
-  <!-- Loading Spinner -->
-  <div id="loadingOverlay" class="loading-overlay hidden"><div class="spinner"></div></div>
-  <div id="toastContainer" class="toast-container"></div>
+  <!-- Top Navigation Bar -->
+  <header class="navbar">
+    <div class="navbar-container">
+      <div class="brand-section">
+        <div class="brand-icon">📦</div>
+        <div class="brand-title">Stock Manager</div>
+      </div>
 
-  <!-- Login Screen -->
-  <div id="loginPage" class="login-container">
-    <div class="login-card">
-      <h2 style="font-size:22px;margin-bottom:8px;color:#0F172A;">📦 Stock Manager</h2>
-      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:24px;">เข้าสู่ระบบจัดการสต๊อกผ้าม่าน</p>
-      <form onsubmit="handleLogin(event)">
-        <input type="text" class="login-input" placeholder="ชื่อผู้ใช้" required>
-        <input type="password" class="login-input" placeholder="รหัสผ่าน" required>
-        <button type="submit" class="btn btn-blue" style="width:100%;justify-content:center;margin-top:8px;">เข้าสู่ระบบ</button>
-      </form>
+      <div class="header-actions">
+        <div class="toggle-group">
+          <span>เปิดการเบิก</span>
+          <label class="switch-btn">
+            <input type="checkbox" checked>
+            <span class="slider-round"></span>
+          </label>
+        </div>
+
+        <button class="btn-badge btn-yellow">⏱️ ตั้งเวลาปิด</button>
+        <button class="btn-badge btn-gray">📢 ประกาศ</button>
+        <button class="btn-badge btn-cyan">🟢 7 ออนไลน์</button>
+
+        <div class="user-info">
+          <div class="user-name">เจ้าหน้าที่สต๊อก</div>
+          <div class="user-role">เจ้าหน้าที่สต๊อก • HQ</div>
+        </div>
+
+        <button class="btn-logout">🚪 ออกจากระบบ</button>
+      </div>
     </div>
-  </div>
 
-  <!-- Main Application Container -->
-  <div id="appContainer" style="display:none;">
-    <header class="header">
-      <div class="header-content">
-        <div class="brand-title">📦 Stock Manager</div>
-        
-        <div class="header-controls">
-          <div class="toggle-wrapper">
-            <span>สถานะการเบิก</span>
-            <label class="switch">
-              <input type="checkbox" checked id="statusToggle">
-              <span class="slider"></span>
-            </label>
-          </div>
-          <button class="badge badge-orange">⏰ ตั้งเวลาปิด</button>
-          <button class="badge badge-grey">📢 ประกาศ</button>
-          <button class="badge badge-cyan">🟢 1 ออนไลน์</button>
-          <button class="badge badge-red">🔴 ปิดการเบิก</button>
-          
-          <div class="user-profile">
-            <div class="name">ผู้ดูแลระบบ</div>
-            <div class="role">ผู้ดูแลระบบ • สำนักงานใหญ่</div>
-          </div>
-          <button class="btn btn-light" style="padding:6px 12px;font-size:12px;" onclick="handleLogout()">ออกจากระบบ</button>
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs-bar">
+      <button class="tab-item active" onclick="switchNav('Withdraw', this)">📦 เบิกสต๊อก</button>
+      <button class="tab-item" onclick="switchNav('ColorChart', this)">🎨 Shart สี</button>
+      <button class="tab-item" onclick="switchNav('MyHistory', this)">👤 ประวัติของฉัน</button>
+      <button class="tab-item" onclick="switchNav('OrderMatching', this)">☑️ จับคู่ออเดอร์</button>
+      <button class="tab-item" onclick="switchNav('StockManage', this)">🤖 จัดการสต๊อก</button>
+      <button class="tab-item" onclick="switchNav('Transactions', this)">📄 ประวัติการเบิก</button>
+      <button class="tab-item" onclick="switchNav('Dashboard', this)">📈 Dashboard</button>
+    </nav>
+  </header>
+
+  <!-- Main Content Layout -->
+  <main class="main-container">
+    
+    <!-- 1. Page Tab: เบิกสต๊อก -->
+    <div id="tabWithdraw" class="page-tab-content active">
+      
+      <!-- Green Alert Banner -->
+      <div class="alert-time-banner">
+        <div class="alert-time-left">
+          <div class="alert-time-icon">i</div>
+          <span>เปิดให้เบิกถึงเวลา 14:30 น.</span>
+        </div>
+        <div class="alert-time-countdown">
+          ⏳ เหลือเวลาอีก 2 ชม. 15 นาที 48 วินาที
         </div>
       </div>
 
-      <nav class="nav-tabs">
-        <button class="nav-tab active" onclick="switchTab('Withdraw', this)">เบิกสต๊อก</button>
-        <button class="nav-tab" onclick="switchTab('ColorChart', this)">Shart สี</button>
-        <button class="nav-tab" onclick="switchTab('OrderMatching', this)">จับคู่ออเดอร์</button>
-        <button class="nav-tab" onclick="switchTab('ImportStock', this)">นำเข้าสต๊อก</button>
-        <button class="nav-tab" onclick="switchTab('History', this)">ประวัติการเบิก</button>
-        <button class="nav-tab" onclick="switchTab('Dashboard', this)">Dashboard</button>
-      </nav>
-    </header>
+      <!-- Content Card -->
+      <div class="content-card">
+        <div class="card-title-row">
+          <h1 class="card-title">เบิกสต๊อกผ้าม่าน</h1>
+          <span class="live-badge"><span class="live-dot"></span>Live</span>
+        </div>
 
-    <main class="main-content">
-      <!-- 1. Tab Withdraw -->
-      <div id="tabWithdraw" class="page active">
-        <div class="card">
-          <div class="page-header">
-            <h1 class="page-title">เบิกสต๊อกผ้าม่าน</h1>
-            <span class="live-pill"><span class="live-dot"></span>Live</span>
+        <!-- Filters Row -->
+        <div class="filters-wrapper">
+          <div class="search-input-box">
+            <svg class="search-icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
+            <input type="text" id="searchInput" value="828" placeholder="ค้นหารหัสสี..." oninput="filterItems()">
           </div>
+          <select class="select-dropdown">
+            <option value="">ความกว้างทั้งหมด</option>
+            <option value="1.00">1.00 ม.</option>
+            <option value="1.10">1.10 ม.</option>
+            <option value="1.20">1.20 ม.</option>
+          </select>
+          <select class="select-dropdown">
+            <option value="">ความสูงทั้งหมด</option>
+            <option value="1.20">1.20 ม.</option>
+            <option value="1.30">1.30 ม.</option>
+            <option value="1.80">1.80 ม.</option>
+          </select>
+          <button class="btn-search" onclick="filterItems()">🔍 ค้นหา</button>
+          <button class="btn-reset" onclick="resetItems()">↻ รีเซ็ต</button>
+        </div>
 
-          <div class="alert-banner">
-            🔒 ปิดการเบิกสำหรับฝ่ายขาย • คุณยังเบิกได้ตามปกติ
-          </div>
+        <!-- Popular Tags Row -->
+        <div class="popular-tags-row">
+          <span class="tags-title">🏷️ แท็กสียอดนิยม:</span>
+          <div class="star-tag">⭐ A4 <span class="close-x">✕</span></div>
+          <div class="star-tag">⭐ A6 <span class="close-x">✕</span></div>
+          <button class="btn-add-tag">+ เพิ่มสีเบิกบ่อย</button>
+        </div>
+      </div>
 
-          <div class="filter-bar">
-            <div class="search-box">
-              <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
-              <input type="text" id="searchInput" placeholder="ค้นหารหัสสี เช่น 734..." oninput="filterProducts()">
-            </div>
-            <select class="select-control">
-              <option value="">ความกว้างทั้งหมด</option>
-              <option value="1.20">1.20 ม.</option>
-              <option value="1.50">1.50 ม.</option>
-            </select>
-            <select class="select-control">
-              <option value="">ความสูงทั้งหมด</option>
-              <option value="1.20">1.20 ม.</option>
-              <option value="2.00">2.00 ม.</option>
-            </select>
-            <button class="btn btn-blue" onclick="filterProducts()">🔍 ค้นหา</button>
-            <button class="btn btn-light" onclick="resetFilter()">↻ รีเซ็ต</button>
-          </div>
-
-          <div class="tags-row">
-            <span class="tags-label">🏷️ แท็กสียอดนิยม:</span>
-            <span class="tag-chip" onclick="quickSearch('734')">+ สีที่เบิกบ่อย (734)</span>
-            <span class="tag-chip" onclick="quickSearch('M-01')">M-01</span>
-            <span class="tag-chip" onclick="quickSearch('M-02')">M-02</span>
-          </div>
-
-          <div id="productGrid" class="product-grid">
-            <!-- Product Cards generated by JS -->
+      <!-- Results Info & View Toggle -->
+      <div class="results-meta-bar">
+        <div class="results-count">พบสินค้าทั้งหมด <span id="itemCount">4</span> รายการสำหรับรหัส "<span id="searchLabel">828</span>"</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span>มุมมอง:</span>
+          <div class="view-toggle-btns">
+            <button class="view-btn active">田</button>
+            <button class="view-btn">☰</button>
           </div>
         </div>
       </div>
 
-      <!-- 2. Tab Color Chart -->
-      <div id="tabColorChart" class="page">
-        <div class="card">
-          <h2 style="font-size:18px;margin-bottom:16px;">🎨 Shart สีผ้าม่าน</h2>
-          <p style="color:var(--text-secondary);font-size:14px;">ตารางรายการสีผ้าม่านทั้งหมดในระบบ</p>
-        </div>
+      <!-- Product Grid Cards -->
+      <div id="productsContainer" class="products-grid">
+        <!-- Cards Generated by JavaScript -->
       </div>
+    </div>
 
-      <!-- 3. Tab Order Matching -->
-      <div id="tabOrderMatching" class="page">
-        <div class="card">
-          <h2 style="font-size:18px;margin-bottom:16px;">🔍 จับคู่ออเดอร์</h2>
-          <div class="table-responsive">
-            <table>
-              <thead><tr><th>สถานะ</th><th>วันที่</th><th>ผู้เบิก</th><th>รหัส</th><th>จำนวน</th></tr></thead>
-              <tbody><tr><td colspan="5" style="text-align:center;color:var(--text-muted);">ไม่มีรายการค้างจับคู่</td></tr></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+    <!-- Other Dummy Tabs -->
+    <div id="tabColorChart" class="page-tab-content">
+      <div class="content-card"><h2 class="card-title">🎨 Shart สี</h2></div>
+    </div>
+    <div id="tabMyHistory" class="page-tab-content">
+      <div class="content-card"><h2 class="card-title">👤 ประวัติของฉัน</h2></div>
+    </div>
+    <div id="tabOrderMatching" class="page-tab-content">
+      <div class="content-card"><h2 class="card-title">☑️ จับคู่ออเดอร์</h2></div>
+    </div>
+    <div id="tabStockManage" class="page-tab-content">
+      <div class="content-card"><h2 class="card-title">🤖 จัดการสต๊อก</h2></div>
+    </div>
+    <div id="tabTransactions" class="page-tab-content">
+      <div class="content-card"><h2 class="card-title">📄 ประวัติการเบิก</h2></div>
+    </div>
+    <div id="tabDashboard" class="page-tab-content">
+      <div class="content-card"><h2 class="card-title">📈 Dashboard</h2></div>
+    </div>
 
-      <!-- 4. Tab Import Stock -->
-      <div id="tabImportStock" class="page">
-        <div class="card">
-          <h2 style="font-size:18px;margin-bottom:16px;">📥 นำเข้าสต๊อก</h2>
-          <button class="btn btn-blue" onclick="showToast('บันทึกข้อมูลเรียบร้อย')">📥 บันทึกนำเข้า</button>
-        </div>
-      </div>
+  </main>
 
-      <!-- 5. Tab History -->
-      <div id="tabHistory" class="page">
-        <div class="card">
-          <h2 style="font-size:18px;margin-bottom:16px;">📋 ประวัติการเบิก</h2>
-          <div class="table-responsive">
-            <table>
-              <thead><tr><th>เวลา</th><th>รายการ</th><th>ผู้เบิก</th><th>จำนวน</th></tr></thead>
-              <tbody><tr><td>13:15 น.</td><td>ผ้าม่านตาไก่ 734</td><td>ผู้ดูแลระบบ</td><td>1 ผืน</td></tr></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- 6. Tab Dashboard -->
-      <div id="tabDashboard" class="page">
-        <div class="dash-grid">
-          <div class="dash-card"><div class="title">รายการเบิกวันนี้</div><div class="value">18</div></div>
-          <div class="dash-card"><div class="title">ผืนที่เบิกวันนี้</div><div class="value">52</div></div>
-        </div>
-        <div class="card" style="height:280px;">
-          <canvas id="chartCanvas"></canvas>
-        </div>
-      </div>
-    </main>
-
-    <!-- Floating Cart Button -->
-    <button class="floating-cart" onclick="showToast('ตะกร้าสินค้าถูกคลิก')">🛒</button>
-  </div>
+  <!-- Floating Cart Button -->
+  <button class="cart-float-btn">
+    🛒
+    <span class="cart-badge">0</span>
+  </button>
 
   <script>
-    const productsData = [
-      { id: 1, name: 'ผ้าม่านตาไก่', code: '734', size: '1.20 × 1.20 ม.', stock: 1 },
-      { id: 2, name: 'ผ้าม่านจีบ', code: 'M-01', size: '1.50 × 2.00 ม.', stock: 12 },
-      { id: 3, name: 'ผ้าม่านพับ', code: 'M-02', size: '1.20 × 1.50 ม.', stock: 8 },
-      { id: 4, name: 'ผ้าม่านตาไก่', code: 'M-05', size: '2.00 × 2.50 ม.', stock: 5 }
+    // Mock Product Data strictly matching the reference image
+    const productsList = [
+      { id: 1, type: 'ผ้าม่านตาไก่', code: '828', dimension: '1.00 × 1.30 ม.', stock: 2, category: 'blue' },
+      { id: 2, type: 'สอดลวด', code: '828', dimension: '1.10 × 1.80 ม.', stock: 1, category: 'purple' },
+      { id: 3, type: 'ผ้าม่านตาไก่', code: '828', dimension: '1.20 × 1.20 ม.', stock: 1, category: 'blue' },
+      { id: 4, type: 'ผ้าม่านตาไก่', code: '828', dimension: '1.30 × 1.20 ม.', stock: 1, category: 'blue' }
     ];
 
-    let chartRendered = false;
-
     window.addEventListener('DOMContentLoaded', () => {
-      renderProducts(productsData);
+      renderProducts(productsList);
     });
 
-    function showToast(msg) {
-      const container = document.getElementById('toastContainer');
-      const toast = document.createElement('div');
-      toast.className = 'toast';
-      toast.innerText = msg;
-      container.appendChild(toast);
-      setTimeout(() => toast.remove(), 2500);
-    }
+    function renderProducts(items) {
+      const container = document.getElementById('productsContainer');
+      document.getElementById('itemCount').innerText = items.length;
 
-    function handleLogin(e) {
-      e.preventDefault();
-      document.getElementById('loginPage').style.display = 'none';
-      document.getElementById('appContainer').style.display = 'block';
-      showToast('เข้าสู่ระบบสำเร็จ');
-    }
-
-    function handleLogout() {
-      document.getElementById('appContainer').style.display = 'none';
-      document.getElementById('loginPage').style.display = 'flex';
-    }
-
-    function switchTab(tabName, btn) {
-      document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      
-      btn.classList.add('active');
-      document.getElementById(`tab${tabName}`).classList.add('active');
-
-      if (tabName === 'Dashboard' && !chartRendered) {
-        initChart();
-        chartRendered = true;
-      }
-    }
-
-    function renderProducts(list) {
-      const grid = document.getElementById('productGrid');
-      if (list.length === 0) {
-        grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--text-muted);">ไม่พบรายการสินค้า</div>`;
+      if (items.length === 0) {
+        container.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-muted);">ไม่พบรายการสินค้าที่คุณค้นหา</div>`;
         return;
       }
-      grid.innerHTML = list.map(p => `
-        <div class="product-card">
-          <div class="product-cat">${p.name}</div>
-          <div class="product-code">${p.code}</div>
-          <div class="product-size">${p.size}</div>
-          <div class="stock-control-row">
-            <span class="stock-text">คงเหลือ: ${p.stock} ผืน</span>
-            <div class="qty-picker">
-              <button onclick="changeQty(${p.id}, -1)">-</button>
-              <input type="number" id="qty-${p.id}" value="1" min="1">
-              <button onclick="changeQty(${p.id}, 1)">+</button>
+
+      container.innerHTML = items.map(p => {
+        const isBlue = p.category === 'blue';
+        const bannerClass = isBlue ? 'banner-blue' : 'banner-purple';
+        const dotClass = isBlue ? 'dot-blue' : 'dot-purple';
+
+        return `
+          <div class="product-card">
+            <div class="card-banner ${bannerClass}">
+              <span class="card-banner-dot ${dotClass}"></span>
+              <span>${p.type}</span>
+            </div>
+            <div class="card-body">
+              <div class="card-code">${p.code}</div>
+              <div class="card-dimension">${p.dimension}</div>
+            </div>
+            <div class="card-footer">
+              <div class="stock-pill">
+                📊 คงเหลือ: ${p.stock} ผืน
+              </div>
             </div>
           </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
-    function changeQty(id, delta) {
-      const input = document.getElementById(`qty-${id}`);
-      let val = parseInt(input.value) || 1;
-      val = Math.max(1, val + delta);
-      input.value = val;
-    }
-
-    function filterProducts() {
-      const val = document.getElementById('searchInput').value.trim().toLowerCase();
-      const filtered = productsData.filter(p => p.code.toLowerCase().includes(val));
+    function filterItems() {
+      const val = document.getElementById('searchInput').value.trim();
+      document.getElementById('searchLabel').innerText = val || '-';
+      const filtered = productsList.filter(p => p.code.includes(val));
       renderProducts(filtered);
     }
 
-    function quickSearch(code) {
-      document.getElementById('searchInput').value = code;
-      filterProducts();
-    }
-
-    function resetFilter() {
+    function resetItems() {
       document.getElementById('searchInput').value = '';
-      renderProducts(productsData);
+      document.getElementById('searchLabel').innerText = '';
+      renderProducts(productsList);
     }
 
-    function initChart() {
-      const ctx = document.getElementById('chartCanvas').getContext('2d');
-      new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: ['จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.', 'อา.'],
-          datasets: [{
-            label: 'จำนวนเบิก (ผืน)',
-            data: [12, 19, 8, 15, 22, 30, 10],
-            backgroundColor: '#0075FF',
-            borderRadius: 6
-          }]
-        },
-        options: { responsive: true, maintainAspectRatio: false }
-      });
+    function switchNav(tabName, btn) {
+      document.querySelectorAll('.tab-item').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.page-tab-content').forEach(p => p.classList.remove('active'));
+
+      btn.classList.add('active');
+      const target = document.getElementById(`tab${tabName}`);
+      if(target) target.classList.add('active');
     }
   </script>
 </body>
