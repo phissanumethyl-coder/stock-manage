@@ -1601,7 +1601,7 @@
       var toast = document.createElement('div');
       toast.className = 'toast ' + (type || 'info');
       var spinner = (type === 'loading') ? '<span class="toast-spinner"></span>' : '';
-      toast.innerHTML = spinner + '<span style="flex:1">' + message + '</span><button onclick="this.parentElement.remove()">×</button>';
+      toast.innerHTML = spinner + '<span class="toast-msg" style="flex:1">' + message + '</span><button onclick="this.parentElement.remove()">×</button>';
       container.appendChild(toast);
       var ms = (duration !== undefined) ? duration : 4000;
       if (ms > 0) setTimeout(function() { toast.remove(); }, ms);
@@ -3840,19 +3840,26 @@
         okText: 'คืนทั้งหมด'
       }).then(function(ok) {
         if (!ok) return;
-        var completed = 0;
         var total = selectedOrders.length;
-        selectedOrders.forEach(function(order) {
-          returnStockAndUpdateStatus(order, function() {
-            completed++;
-            if (completed === total) {
-              showToast('✅ คืนสต๊อก ' + total + ' รายการเรียบร้อย', 'success');
-              selectedOrderIds.clear();
-              updateSelectedCount();
-              document.getElementById('selectAllOrders').checked = false;
-            }
+        var loadingToast = showToast('กำลังคืนสต๊อก 0/' + total + '...', 'loading', 0);
+        var idx = 0;
+        function next() {
+          if (idx >= total) {
+            loadingToast.remove();
+            showToast('✅ คืนสต๊อก ' + total + ' รายการเรียบร้อย', 'success');
+            selectedOrderIds.clear();
+            updateSelectedCount();
+            var selAll = document.getElementById('selectAllOrders');
+            if (selAll) selAll.checked = false;
+            return;
+          }
+          loadingToast.querySelector('.toast-msg').textContent = 'กำลังคืนสต๊อก ' + (idx + 1) + '/' + total + '...';
+          returnStockAndUpdateStatus(selectedOrders[idx], function() {
+            idx++;
+            next();
           });
-        });
+        }
+        next();
       });
     }
 
@@ -3864,41 +3871,57 @@
         return;
       }
       var sheetName = order.sheetName || order.colorCode;
-      var stockRef = db.ref('stock/' + sheetName + '/items');
-      
-      stockRef.once('value').then(function(snapshot) {
-        var items = snapshot.val() || [];
-        var found = false;
-        
-        for (var i = 0; i < items.length; i++) {
-          if (Math.abs(items[i].width - order.width) < 0.01 && 
-              Math.abs(items[i].height - order.height) < 0.01) {
-            items[i].quantity = (items[i].quantity || 0) + order.quantity;
-            found = true;
-            break;
+      var itemRef = db.ref('stock/' + sheetName + '/items');
+      var targetRow = order.rowIndex; // rowIndex ที่บันทึกไว้ตอนเบิก
+
+      // ใช้ Firebase transaction เพื่อป้องกัน race condition (คืนหลายรายการรหัสเดียวกันพร้อมกัน)
+      itemRef.transaction(function(items) {
+        if (!items) return items;
+        var idx = -1;
+        // 1) จับคู่ด้วย row ก่อน (แม่นยำที่สุด รองรับขนาดซ้ำ)
+        if (targetRow !== undefined && targetRow !== null) {
+          for (var i = 0; i < items.length; i++) {
+            if (items[i] && items[i].row === targetRow) { idx = i; break; }
           }
         }
-        
-        if (found) {
-          return stockRef.set(items).then(function() {
-            return db.ref('transactions/' + order.id).update({
-              matchStatus: 'returned',
-              matchedAt: new Date().toISOString(),
-              matchedBy: currentUser.username,
-              status: 'returned',
-              returnedAt: new Date().toISOString(),
-              returnedBy: currentUser.username,
-              returnReason: 'ไม่มีในใบออเดอร์'
-            });
-          });
-        } else {
-          throw new Error('ไม่พบรายการสต๊อกที่ตรงกัน');
+        // 2) ถ้าไม่เจอ row ให้ fallback จับคู่ด้วยขนาด
+        if (idx === -1) {
+          for (var j = 0; j < items.length; j++) {
+            if (items[j] &&
+                Math.abs(items[j].width - order.width) < 0.01 &&
+                Math.abs(items[j].height - order.height) < 0.01) {
+              idx = j; break;
+            }
+          }
         }
-      }).then(function() {
-        if (callback) callback();
-        else showToast('คืนสต๊อกเรียบร้อย', 'success');
-      }).catch(function(error) {
-        showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
+        if (idx === -1) return items; // ไม่เจอ = ไม่แก้ (committed=false)
+        items[idx].quantity = (items[idx].quantity || 0) + order.quantity;
+        return items;
+      }, function(error, committed, snapshot) {
+        if (error) {
+          showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
+          if (callback) callback();
+        } else if (!committed) {
+          showToast('ไม่พบรายการสต๊อกที่ตรงกัน (' + formatColorCode(order.colorCode) + ')', 'error');
+          if (callback) callback();
+        } else {
+          // อัพเดทสถานะ transaction เป็น returned
+          db.ref('transactions/' + order.id).update({
+            matchStatus: 'returned',
+            matchedAt: new Date().toISOString(),
+            matchedBy: currentUser.username,
+            status: 'returned',
+            returnedAt: new Date().toISOString(),
+            returnedBy: currentUser.username,
+            returnReason: 'ไม่มีในใบออเดอร์'
+          }).then(function() {
+            if (callback) callback();
+            else showToast('✅ คืนสต๊อกเรียบร้อย', 'success');
+          }).catch(function(err) {
+            showToast('เกิดข้อผิดพลาด: ' + err.message, 'error');
+            if (callback) callback();
+          });
+        }
       });
     }
 
