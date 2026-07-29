@@ -465,14 +465,16 @@
     .import-lock-banner.locked{background:#fff3e0;border:1px solid #ffcc80;color:#e65100}
     .import-lock-banner.unlocked{background:#e8f8ee;border:1px solid #a5d6b7;color:#1a7f37}
     /* Sheet tabs (bottom-of-sheet style, but placed on top) */
-    .sheet-tabs-bar{display:flex;align-items:center;gap:8px;border-bottom:2px solid var(--border);margin-bottom:12px;overflow-x:auto;padding-bottom:2px}
-    .sheet-tabs{display:flex;gap:4px;flex:1;min-width:0}
-    .sheet-tab{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;background:var(--bg-secondary);border:1px solid var(--border);border-bottom:none;border-radius:10px 10px 0 0;font-size:14px;font-weight:500;color:var(--text-secondary);cursor:pointer;white-space:nowrap;transition:var(--transition);position:relative;top:2px}
+    .sheet-tabs-bar{display:flex;align-items:flex-end;gap:8px;border-bottom:2px solid var(--border);margin-bottom:12px;padding-bottom:0}
+    .sheet-tabs{display:flex;gap:4px;flex:1 1 auto;min-width:0;overflow-x:auto;overflow-y:hidden;padding-bottom:2px;scrollbar-width:thin}
+    .sheet-tabs::-webkit-scrollbar{height:6px}
+    .sheet-tabs::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+    .sheet-tab{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;background:var(--bg-secondary);border:1px solid var(--border);border-bottom:none;border-radius:10px 10px 0 0;font-size:14px;font-weight:500;color:var(--text-secondary);cursor:pointer;white-space:nowrap;transition:var(--transition);position:relative;top:2px;flex:0 0 auto}
     .sheet-tab:hover{background:var(--bg-tertiary)}
     .sheet-tab.active{background:var(--bg-primary);color:var(--accent);font-weight:600;border-color:var(--border);border-bottom:2px solid var(--bg-primary);box-shadow:0 -2px 6px rgba(0,0,0,.04)}
     .sheet-tab .tab-dirty{width:7px;height:7px;border-radius:50%;background:var(--warning);display:inline-block}
     .sheet-tab .tab-badge{font-size:11px;background:rgba(0,0,0,.08);padding:1px 7px;border-radius:10px;color:var(--text-tertiary)}
-    .sheet-tab-add{padding:8px 14px;background:transparent;border:1px dashed var(--accent);color:var(--accent);border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;font-family:inherit}
+    .sheet-tab-add{flex:0 0 auto;padding:8px 14px;background:transparent;border:1px dashed var(--accent);color:var(--accent);border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;font-family:inherit;align-self:center;margin-bottom:4px}
     .sheet-tab-add:hover{background:#eef6ff}
     .sheet-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
     .sheet-toolbar-left{display:flex;align-items:center;gap:8px}
@@ -2930,21 +2932,37 @@
       btn.disabled = true;
       btn.innerHTML = '⏳ กำลังยกเลิก...';
       
-      // คืนสต๊อก
-      returnStockToInventory(pendingCancelTxn).then(function() {
+      // ตรวจสอบสถานะล่าสุดก่อน (กันคืน/ยกเลิกซ้ำที่ทำให้สต๊อกเด้ง)
+      db.ref('transactions/' + pendingCancelKey + '/status').once('value').then(function(snap) {
+        var st = snap.val();
+        if (st === 'returned' || st === 'cancelled') {
+          showToast('⚠️ รายการนี้ถูกคืน/ยกเลิกไปแล้ว', 'warning');
+          closeModal('cancelConfirmModal');
+          pendingCancelKey = null; pendingCancelTxn = null;
+          btn.disabled = false; btn.innerHTML = '🗑️ ยืนยันยกเลิก';
+          return Promise.reject('already');
+        }
+        // คืนสต๊อก
+        return returnStockToInventory(pendingCancelTxn);
+      }).then(function() {
         // อัพเดทสถานะ
-        return db.ref('transactions/' + pendingCancelKey + '/status').set('cancelled');
+        return db.ref('transactions/' + pendingCancelKey).update({
+          status: 'cancelled',
+          matchStatus: 'returned',
+          cancelledAt: new Date().toISOString(),
+          cancelledBy: currentUser.username
+        });
       }).then(function() {
         showToast('✅ ยกเลิกและคืนสต๊อกเรียบร้อย', 'success');
         closeModal('cancelConfirmModal');
-        
-        // Reset
         pendingCancelKey = null;
         pendingCancelTxn = null;
         btn.disabled = false;
         btn.innerHTML = '🗑️ ยืนยันยกเลิก';
       }).catch(function(error) {
-        showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
+        if (error !== 'already') {
+          showToast('เกิดข้อผิดพลาด: ' + (error.message || error), 'error');
+        }
         btn.disabled = false;
         btn.innerHTML = '🗑️ ยืนยันยกเลิก';
       });
@@ -2967,8 +2985,19 @@
             showToast('ไม่พบรายการ', 'error');
             return;
           }
+          // กันคืนซ้ำ
+          if (txn.status === 'returned') {
+            loadingToast.remove();
+            showToast('⚠️ รายการนี้คืนสต๊อกไปแล้ว', 'warning');
+            return;
+          }
           return returnStockToInventory(txn).then(function() {
-            return db.ref('transactions/' + transactionId + '/status').set('returned');
+            return db.ref('transactions/' + transactionId).update({
+              status: 'returned',
+              matchStatus: 'returned',
+              returnedAt: new Date().toISOString(),
+              returnedBy: currentUser.username
+            });
           }).then(function() {
             loadingToast.remove();
             showToast('✅ คืนสต๊อกเรียบร้อยแล้ว', 'success');
