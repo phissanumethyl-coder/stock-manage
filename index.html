@@ -11,6 +11,8 @@
   <style>
     :root{--bg-primary:#fff;--bg-secondary:#f5f5f7;--bg-tertiary:#e8e8ed;--text-primary:#1d1d1f;--text-secondary:#6e6e73;--text-tertiary:#86868b;--accent:#0071e3;--accent-hover:#0077ed;--primary:#0071e3;--primary-hover:#0077ed;--success:#34c759;--warning:#ff9500;--danger:#ff3b30;--border:rgba(0,0,0,.08);--shadow-sm:0 2px 8px rgba(0,0,0,.04);--shadow-md:0 4px 20px rgba(0,0,0,.08);--shadow-lg:0 8px 40px rgba(0,0,0,.12);--radius-sm:8px;--radius-md:12px;--radius-lg:20px;--radius-xl:28px;--transition:all .3s cubic-bezier(.25,.1,.25,1)}
     *{margin:0;padding:0;box-sizing:border-box}
+    /* จองพื้นที่ scrollbar ไว้เสมอ ป้องกันเนื้อหาขยับตอนสลับหน้า (สั้น/ยาว) */
+    html{overflow-y:scroll;scrollbar-gutter:stable}
     body{font-family:'Kanit',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg-secondary);color:var(--text-primary);line-height:1.5;min-height:100vh;font-weight:300}
     /* Instant feedback styles */
     .btn-loading{position:relative;color:transparent!important;pointer-events:none}
@@ -277,8 +279,11 @@
     
     /* Order Matching Styles */
     .order-matching-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px}
-    .order-matching-filters{display:flex;gap:10px;flex-wrap:wrap;flex:1}
-    .order-matching-filters select,.order-matching-filters input{min-width:120px}
+    .order-matching-filters{display:flex;gap:10px;flex-wrap:nowrap;flex:1;align-items:center}
+    .order-matching-filters .form-input{width:auto;padding:12px 14px;font-size:14px}
+    .order-matching-filters .match-search{flex:1 1 auto;min-width:160px}
+    .order-matching-filters select{flex:0 0 auto;min-width:120px}
+    @media(max-width:900px){.order-matching-filters{flex-wrap:wrap}.order-matching-filters .match-search{flex:1 1 100%}.order-matching-filters select{flex:1 1 45%}}
     .order-matching-summary{display:flex;gap:16px;padding:12px 16px;background:var(--bg-secondary);border-radius:var(--radius-lg);margin-bottom:16px;flex-wrap:wrap}
     .summary-item{display:flex;align-items:center;gap:8px;font-size:14px}
     .summary-dot{width:12px;height:12px;border-radius:50%}
@@ -886,19 +891,20 @@
             <!-- Filters -->
             <div class="order-matching-header">
               <div class="order-matching-filters">
-                <select id="filterMatchStatus" class="form-input" onchange="filterOrders()" style="min-width:130px;">
+                <input type="text" id="filterMatchSearch" class="form-input match-search" placeholder="🔍 ค้นหารหัสสี..." oninput="filterOrders()">
+                <select id="filterMatchStatus" class="form-input" onchange="filterOrders()">
                   <option value="">ทุกสถานะ</option>
                   <option value="pending">🟡 รอตรวจ</option>
                   <option value="matched">🟢 เช็คแล้ว</option>
                   <option value="returned">🔴 คืนแล้ว</option>
                 </select>
-                <select id="filterMatchBranch" class="form-input" onchange="updateUserFilterByBranch();filterOrders()" style="min-width:130px;">
+                <select id="filterMatchBranch" class="form-input" onchange="updateUserFilterByBranch();filterOrders()">
                   <option value="">ทุกสาขา</option>
                 </select>
-                <select id="filterMatchUser" class="form-input" onchange="filterOrders()" style="min-width:130px;">
+                <select id="filterMatchUser" class="form-input" onchange="filterOrders()">
                   <option value="">ทุกคน</option>
                 </select>
-                <select id="filterMatchDate" class="form-input" onchange="toggleCustomDate()" style="min-width:130px;">
+                <select id="filterMatchDate" class="form-input" onchange="toggleCustomDate()">
                   <option value="today">วันนี้</option>
                   <option value="yesterday">เมื่อวาน</option>
                   <option value="week">สัปดาห์นี้</option>
@@ -907,7 +913,6 @@
                   <option value="custom">📅 ระบุวันที่...</option>
                 </select>
                 <input type="date" id="filterMatchCustomDate" class="form-input" style="display:none;min-width:150px;" onchange="updateBranchAndUserFilter();filterOrders()">
-                <input type="text" id="filterMatchSearch" class="form-input" placeholder="🔍 ค้นหารหัสสี..." oninput="filterOrders()" style="max-width:150px;">
               </div>
             </div>
             
@@ -1523,7 +1528,7 @@
     
     var navConfig = {
       sales: [{id:'withdraw',label:'เบิกสต๊อก',page:'pageWithdraw'},{id:'colorChart',label:'Shart สี',page:'pageColorChart'},{id:'myHistory',label:'ประวัติของฉัน',page:'pageMyHistory'},{id:'dashboard',label:'Dashboard',page:'pageDashboard'}],
-      staff: [{id:'withdraw',label:'เบิกสต๊อก',page:'pageWithdraw'},{id:'colorChart',label:'Shart สี',page:'pageColorChart'},{id:'myHistory',label:'ประวัติของฉัน',page:'pageMyHistory'},{id:'orderMatching',label:'จับคู่ออเดอร์',page:'pageOrderMatching'},{id:'transactions',label:'ประวัติการเบิก',page:'pageTransactions'},{id:'dashboard',label:'Dashboard',page:'pageDashboard'}],
+      staff: [{id:'withdraw',label:'เบิกสต๊อก',page:'pageWithdraw'},{id:'colorChart',label:'Shart สี',page:'pageColorChart'},{id:'myHistory',label:'ประวัติของฉัน',page:'pageMyHistory'},{id:'orderMatching',label:'จับคู่ออเดอร์',page:'pageOrderMatching'},{id:'importStock',label:'นำเข้าสต๊อก',page:'pageImportStock'},{id:'transactions',label:'ประวัติการเบิก',page:'pageTransactions'},{id:'dashboard',label:'Dashboard',page:'pageDashboard'}],
       admin: [{id:'withdraw',label:'เบิกสต๊อก',page:'pageWithdraw'},{id:'colorChart',label:'Shart สี',page:'pageColorChart'},{id:'orderMatching',label:'จับคู่ออเดอร์',page:'pageOrderMatching'},{id:'importStock',label:'นำเข้าสต๊อก',page:'pageImportStock'},{id:'transactions',label:'ประวัติการเบิก',page:'pageTransactions'},{id:'dashboard',label:'Dashboard',page:'pageDashboard'},{id:'users',label:'ผู้ใช้งาน',page:'pageUsers'},{id:'activityLog',label:'Activity Log',page:'pageActivityLog'}]
     };
 
@@ -3403,8 +3408,11 @@
           if (txn.status !== 'completed' && txn.status !== 'returned') continue;
           
           txn.id = txnId;
-          // Default matchStatus to 'pending' if not set
-          if (!txn.matchStatus) {
+          // ถ้าคืนสต๊อกไปแล้ว (status=returned) ให้ถือว่าจับคู่เป็น "คืนแล้ว" เสมอ
+          // ป้องกันการกดคืนซ้ำจากหน้านี้ (ที่ทำให้สต๊อกเด้งเกิน)
+          if (txn.status === 'returned') {
+            txn.matchStatus = 'returned';
+          } else if (!txn.matchStatus) {
             txn.matchStatus = 'pending';
           }
           allOrdersForMatching.push(txn);
@@ -3849,6 +3857,12 @@
     }
 
     function returnStockAndUpdateStatus(order, callback) {
+      // กันคืนซ้ำ: ถ้าคืนไปแล้วไม่ทำอีก
+      if (order.status === 'returned' || order.matchStatus === 'returned') {
+        showToast('⚠️ รายการนี้คืนสต๊อกไปแล้ว', 'warning');
+        if (callback) callback();
+        return;
+      }
       var sheetName = order.sheetName || order.colorCode;
       var stockRef = db.ref('stock/' + sheetName + '/items');
       
