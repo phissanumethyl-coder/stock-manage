@@ -132,6 +132,17 @@
     .add-favorite-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(0,113,227,0.05);transform:translateY(-2px)}
     .add-favorite-btn svg{width:14px;height:14px}
     .favorite-modal{max-width:400px}
+    .app-dialog-icon{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:14px;background:var(--bg-secondary)}
+    #appConfirmHeader{flex-direction:column;align-items:center;text-align:center;padding:28px 24px 18px;border-bottom:none}
+    #appConfirmHeader.danger .app-dialog-icon{background:linear-gradient(135deg,#ef5350,#e53935);color:#fff;box-shadow:0 8px 22px rgba(244,67,54,.35)}
+    #appConfirmHeader.danger .modal-title{color:#c62828}
+    #appConfirmHeader.warning .app-dialog-icon{background:linear-gradient(135deg,#ffb300,#ff9800);color:#fff;box-shadow:0 8px 22px rgba(255,152,0,.35)}
+    #appConfirmHeader.warning .modal-title{color:#e65100}
+    #appConfirmHeader.info .app-dialog-icon{background:linear-gradient(135deg,#42a5f5,#1e88e5);color:#fff;box-shadow:0 8px 22px rgba(30,136,229,.35)}
+    #appConfirmHeader.info .modal-title{color:#1565c0}
+    .app-dialog-subtitle{font-size:14px;color:var(--text-secondary);margin-top:2px}
+    #appConfirmModal .modal-footer,#appPromptModal .modal-footer{justify-content:center}
+    #appConfirmModal.danger #appConfirmOkBtn{background:var(--danger)}
     .favorite-header{flex-direction:column;align-items:center;padding:30px 24px 20px;background:linear-gradient(135deg,#fff9c4 0%,#ffecb3 50%,#ffe082 100%);border-radius:var(--radius-lg) var(--radius-lg) 0 0;text-align:center}
     .favorite-header .modal-close{position:absolute;top:12px;right:12px}
     .favorite-icon-wrapper{width:70px;height:70px;background:linear-gradient(135deg,#ffc107 0%,#ff9800 100%);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:16px;color:#fff;box-shadow:0 8px 25px rgba(255,193,7,0.4)}
@@ -445,6 +456,9 @@
     @media(max-width:900px){.header-stock-controls .stock-toggle-wrapper{padding:6px 10px}.header-stock-controls .stock-toggle-label{font-size:12px}}
     /* Google-Sheet style import table */
     .sheet-hint{background:#eef6ff;border:1px solid #cfe4ff;color:#0b5cad;font-size:13px;padding:10px 14px;border-radius:var(--radius-sm);margin-bottom:16px;line-height:1.6}
+    .import-lock-banner{padding:12px 16px;border-radius:var(--radius-sm);font-size:14px;margin-bottom:16px;line-height:1.6}
+    .import-lock-banner.locked{background:#fff3e0;border:1px solid #ffcc80;color:#e65100}
+    .import-lock-banner.unlocked{background:#e8f8ee;border:1px solid #a5d6b7;color:#1a7f37}
     /* Sheet tabs (bottom-of-sheet style, but placed on top) */
     .sheet-tabs-bar{display:flex;align-items:center;gap:8px;border-bottom:2px solid var(--border);margin-bottom:12px;overflow-x:auto;padding-bottom:2px}
     .sheet-tabs{display:flex;gap:4px;flex:1;min-width:0}
@@ -472,13 +486,14 @@
     .sheet-table tbody td.del-cell{text-align:center}
     .sheet-cell{width:100%;border:none;background:transparent;padding:10px 12px;font-family:inherit;font-size:14px;font-weight:300;color:var(--text-primary);outline:none}
     .sheet-cell:focus{background:#e8f2ff;box-shadow:inset 0 0 0 2px var(--accent)}
+    .sheet-cell::placeholder{color:#c4c4cc;font-weight:400}
     .sheet-cell.invalid{background:#ffe9e7;box-shadow:inset 0 0 0 2px var(--danger)}
     select.sheet-cell{cursor:pointer;font-weight:400}
     .sheet-del-btn{background:transparent;border:none;color:var(--danger);cursor:pointer;font-size:16px;padding:6px 10px;border-radius:6px}
     .sheet-del-btn:hover{background:#ffe9e7}
     .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}
     .modal-overlay.open{display:flex}
-    .modal{background:var(--bg-primary);border-radius:var(--radius-xl);width:100%;max-width:500px;max-height:90vh;overflow-y:auto;animation:modalIn .15s ease-out}
+    .modal{background:var(--bg-primary);border-radius:var(--radius-xl);width:100%;max-width:500px;max-height:90vh;overflow-y:auto;animation:modalIn .15s ease-out;position:relative}
     @keyframes modalIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
     @keyframes modalIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
     .modal-header{padding:24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
@@ -487,10 +502,17 @@
     .modal-body{padding:24px}
     .modal-footer{padding:24px;border-top:1px solid var(--border);display:flex;gap:12px;justify-content:flex-end}
     .toast-container{position:fixed;top:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px}
-    .toast{padding:14px 20px;border-radius:var(--radius-md);background:var(--bg-primary);box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:12px;animation:toastIn .3s ease;max-width:360px}
-    .toast.success{border-left:4px solid var(--success)}
-    .toast.error{border-left:4px solid var(--danger)}
-    .toast.warning{border-left:4px solid var(--warning)}
+    .toast{padding:14px 20px;border-radius:var(--radius-md);background:var(--bg-primary);box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:12px;animation:toastIn .3s ease;max-width:400px;font-weight:600;font-size:14px}
+    .toast button{background:transparent;border:none;cursor:pointer;font-size:18px;line-height:1;color:inherit;opacity:.6;padding:0 2px}
+    .toast button:hover{opacity:1}
+    .toast.success{border-left:4px solid var(--success);color:#1a7f37}
+    .toast.error{border-left:4px solid var(--danger);color:#c62828}
+    .toast.warning{border-left:4px solid var(--warning);color:#b26a00}
+    .toast.loading{border-left:4px solid var(--warning);color:#b26a00}
+    .toast.info{border-left:4px solid var(--accent);color:#0b5cad}
+    .toast.dark{border-left:4px solid #444;color:#333}
+    .toast .toast-spinner{width:14px;height:14px;border:2px solid rgba(178,106,0,.3);border-top-color:#b26a00;border-radius:50%;animation:toastSpin .7s linear infinite;flex-shrink:0}
+    @keyframes toastSpin{to{transform:rotate(360deg)}}
     @keyframes toastIn{from{opacity:0;transform:translateX(100%)}to{opacity:1;transform:translateX(0)}}
     .date-filter{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
     .date-input{padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;font-size:14px}
@@ -607,6 +629,45 @@
   </style>
 </head>
 <body>
+  <!-- Pretty Confirm Modal (แทน confirm ของ browser) -->
+  <div id="appConfirmModal" class="modal-overlay">
+    <div class="modal favorite-modal">
+      <div class="modal-header" id="appConfirmHeader">
+        <div class="app-dialog-icon" id="appConfirmIcon">❓</div>
+        <h2 class="modal-title" id="appConfirmTitle">ยืนยัน</h2>
+        <p class="app-dialog-subtitle" id="appConfirmSubtitle"></p>
+        <button class="modal-close" onclick="appConfirmResolve(false)">×</button>
+      </div>
+      <div class="modal-body" id="appConfirmBody" style="text-align:center;color:var(--text-secondary);"></div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="appConfirmResolve(false)">ยกเลิก</button>
+        <button class="btn btn-primary" id="appConfirmOkBtn" onclick="appConfirmResolve(true)">ตกลง</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pretty Prompt Modal (แทน prompt ของ browser) -->
+  <div id="appPromptModal" class="modal-overlay">
+    <div class="modal favorite-modal">
+      <div class="modal-header favorite-header">
+        <div class="favorite-icon-wrapper" id="appPromptIcon">✏️</div>
+        <h2 class="modal-title" id="appPromptTitle">กรอกข้อมูล</h2>
+        <p class="favorite-subtitle" id="appPromptSubtitle"></p>
+        <button class="modal-close" onclick="appPromptResolve(null)">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <input type="text" id="appPromptInput" class="form-input" placeholder="">
+        </div>
+        <p class="favorite-hint" id="appPromptHint" style="display:none;"></p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="appPromptResolve(null)">ยกเลิก</button>
+        <button class="btn btn-primary" onclick="appPromptSubmit()">ตกลง</button>
+      </div>
+    </div>
+  </div>
+
   <div id="loadingOverlay" class="loading-overlay"><div class="spinner"></div></div>
   <div id="toastContainer" class="toast-container"></div>
 
@@ -902,6 +963,7 @@
             <div class="sheet-hint">
               💡 กรอกเหมือน Google Sheet — แต่ละ<b>แท็บด้านล่าง = รหัสสี 1 รหัส</b> สลับไปมาได้โดยข้อมูลไม่หาย · กด <b>Enter</b> ที่ช่องสุดท้ายเพื่อขึ้นแถวใหม่ · วางจาก Excel ได้ (Ctrl+V) · กด <b>💾 บันทึกทั้งหมด</b> ทีเดียวทุกแท็บขึ้น Database เลย
             </div>
+            <div id="importLockBanner" class="import-lock-banner" style="display:none;"></div>
 
             <!-- แท็บรหัสสี (เหมือน sheet tabs) -->
             <div class="sheet-tabs-bar">
@@ -1529,13 +1591,66 @@
     function showLoading() { document.getElementById('loadingOverlay').classList.remove('hidden'); }
     function hideLoading() { document.getElementById('loadingOverlay').classList.add('hidden'); }
     
-    function showToast(message, type) {
+    function showToast(message, type, duration) {
       var container = document.getElementById('toastContainer');
       var toast = document.createElement('div');
-      toast.className = 'toast toast-' + (type || 'info');
-      toast.innerHTML = '<span>' + message + '</span><button onclick="this.parentElement.remove()">×</button>';
+      toast.className = 'toast ' + (type || 'info');
+      var spinner = (type === 'loading') ? '<span class="toast-spinner"></span>' : '';
+      toast.innerHTML = spinner + '<span style="flex:1">' + message + '</span><button onclick="this.parentElement.remove()">×</button>';
       container.appendChild(toast);
-      setTimeout(function() { toast.remove(); }, 4000);
+      var ms = (duration !== undefined) ? duration : 4000;
+      if (ms > 0) setTimeout(function() { toast.remove(); }, ms);
+      return toast;
+    }
+
+    // ===== Pretty Confirm / Prompt (แทน confirm/prompt ของ browser) =====
+    var _appConfirmCb = null;
+    function appConfirm(opts) {
+      // opts: {title, message, okText, type:'danger'|'warning'|'info', icon}
+      return new Promise(function(resolve) {
+        _appConfirmCb = resolve;
+        var type = opts.type || 'warning';
+        var header = document.getElementById('appConfirmHeader');
+        header.className = 'modal-header ' + type;
+        document.getElementById('appConfirmModal').className = 'modal-overlay open ' + type;
+        document.getElementById('appConfirmIcon').textContent = opts.icon || (type === 'danger' ? '🗑️' : type === 'info' ? 'ℹ️' : '⚠️');
+        document.getElementById('appConfirmTitle').textContent = opts.title || 'ยืนยันการทำรายการ';
+        document.getElementById('appConfirmSubtitle').textContent = opts.subtitle || '';
+        document.getElementById('appConfirmBody').innerHTML = opts.message || '';
+        document.getElementById('appConfirmOkBtn').textContent = opts.okText || 'ตกลง';
+      });
+    }
+    function appConfirmResolve(val) {
+      document.getElementById('appConfirmModal').classList.remove('open');
+      if (_appConfirmCb) { var cb = _appConfirmCb; _appConfirmCb = null; cb(val); }
+    }
+
+    var _appPromptCb = null;
+    function appPrompt(opts) {
+      // opts: {title, subtitle, placeholder, value, hint, icon, okText}
+      return new Promise(function(resolve) {
+        _appPromptCb = resolve;
+        document.getElementById('appPromptModal').classList.add('open');
+        document.getElementById('appPromptIcon').textContent = opts.icon || '✏️';
+        document.getElementById('appPromptTitle').textContent = opts.title || 'กรอกข้อมูล';
+        document.getElementById('appPromptSubtitle').textContent = opts.subtitle || '';
+        var input = document.getElementById('appPromptInput');
+        input.placeholder = opts.placeholder || '';
+        input.value = opts.value || '';
+        var hint = document.getElementById('appPromptHint');
+        if (opts.hint) { hint.style.display = 'block'; hint.textContent = opts.hint; }
+        else { hint.style.display = 'none'; }
+        setTimeout(function(){ input.focus(); input.select(); }, 50);
+        input.onkeydown = function(e) { if (e.key === 'Enter') { e.preventDefault(); appPromptSubmit(); } };
+      });
+    }
+    function appPromptSubmit() {
+      var val = document.getElementById('appPromptInput').value;
+      appPromptResolve(val);
+    }
+    function appPromptResolve(val) {
+      document.getElementById('appPromptModal').classList.remove('open');
+      if (_appPromptCb) { var cb = _appPromptCb; _appPromptCb = null; cb(val); }
     }
 
     // ============================================
@@ -1824,6 +1939,16 @@
           var colorCode = document.getElementById('searchColorCode').value.trim();
           if (colorCode) {
             handleSearch();
+          }
+        }
+
+        // อัพเดทการล็อกหน้านำเข้าสต๊อกทันทีเมื่อสถานะเบิกเปลี่ยน
+        if (currentPage === 'pageImportStock') {
+          applyImportLockState();
+          // เพิ่งปิดเบิก + ไม่มีข้อมูลค้างแก้ = โหลดข้อมูลล่าสุดจาก DB
+          if (!stockEnabled) {
+            var anyDirty = Object.keys(importTabs).some(function(c){ return importTabs[c].dirty; });
+            if (!anyDirty) reloadImportFromDB();
           }
         }
         
@@ -2821,24 +2946,32 @@
     }
 
     function returnStock(transactionId) {
-      if (!confirm('คืนสต๊อกสำหรับรายการนี้?')) return;
-      
-      showToast('กำลังคืนสต๊อก...', 'info');
-      
-      db.ref('transactions/' + transactionId).once('value').then(function(snapshot) {
-        var txn = snapshot.val();
-        if (!txn) {
-          showToast('ไม่พบรายการ', 'error');
-          return;
-        }
-        
-        return returnStockToInventory(txn).then(function() {
-          return db.ref('transactions/' + transactionId + '/status').set('returned');
-        }).then(function() {
-          showToast('คืนสต๊อกเรียบร้อยแล้ว', 'success');
+      appConfirm({
+        type: 'warning',
+        icon: '↩️',
+        title: 'คืนสต๊อก',
+        message: 'ต้องการคืนสต๊อกสำหรับรายการนี้กลับเข้าระบบหรือไม่?',
+        okText: 'คืนสต๊อก'
+      }).then(function(ok) {
+        if (!ok) return;
+        var loadingToast = showToast('กำลังคืนสต๊อก...', 'loading', 0);
+        db.ref('transactions/' + transactionId).once('value').then(function(snapshot) {
+          var txn = snapshot.val();
+          if (!txn) {
+            loadingToast.remove();
+            showToast('ไม่พบรายการ', 'error');
+            return;
+          }
+          return returnStockToInventory(txn).then(function() {
+            return db.ref('transactions/' + transactionId + '/status').set('returned');
+          }).then(function() {
+            loadingToast.remove();
+            showToast('✅ คืนสต๊อกเรียบร้อยแล้ว', 'success');
+          });
+        }).catch(function(error) {
+          loadingToast.remove();
+          showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
         });
-      }).catch(function(error) {
-        showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
       });
     }
 
@@ -2892,7 +3025,7 @@
     function toggleStockStatus() {
       var enabled = document.getElementById('toggleStockStatus').checked;
       db.ref('config/STOCK_ENABLED').set(enabled ? 'TRUE' : 'FALSE').then(function() {
-        showToast(enabled ? 'เปิดการเบิกแล้ว' : 'ปิดการเบิกแล้ว', 'success');
+        showToast(enabled ? '🟢 เปิดการเบิกแล้ว' : '⚫ ปิดการเบิกแล้ว', enabled ? 'success' : 'dark');
         logActivity('toggle_stock', enabled ? 'เปิดการเบิก' : 'ปิดการเบิก');
       });
     }
@@ -3604,24 +3737,31 @@
     function markSingleMatched(orderId) {
       var order = allOrdersForMatching.find(function(o) { return o.id === orderId; });
       if (!order) return;
-      
-      if (!confirm('ยืนยันการเช็ครายการ\n\nรหัสสี: ' + formatColorCode(order.colorCode) + '\nขนาด: ' + formatSize(order.width) + ' × ' + formatSize(order.height) + '\nจำนวน: ' + order.quantity + ' ผืน\nผู้เบิก: ' + order.displayName + '\n\nต้องการเปลี่ยนสถานะเป็น "เช็คแล้ว" หรือไม่?')) {
-        return;
-      }
-      
-      updateMatchStatus(orderId, 'matched');
+      appConfirm({
+        type: 'info', icon: '✅',
+        title: 'ยืนยันการเช็ครายการ',
+        subtitle: formatColorCode(order.colorCode) + ' · ' + formatSize(order.width) + '×' + formatSize(order.height),
+        message: 'จำนวน ' + order.quantity + ' ผืน · ผู้เบิก ' + order.displayName + '<br>เปลี่ยนสถานะเป็น "เช็คแล้ว"?',
+        okText: 'เช็คแล้ว'
+      }).then(function(ok) {
+        if (!ok) return;
+        updateMatchStatus(orderId, 'matched');
+      });
     }
 
     function returnSingleStock(orderId) {
       var order = allOrdersForMatching.find(function(o) { return o.id === orderId; });
       if (!order) return;
-      
-      if (!confirm('⚠️ ยืนยันการคืนสต๊อก\n\nรหัสสี: ' + formatColorCode(order.colorCode) + '\nขนาด: ' + formatSize(order.width) + ' × ' + formatSize(order.height) + '\nจำนวน: ' + order.quantity + ' ผืน\nผู้เบิก: ' + order.displayName + '\n\n❗ สต๊อกจะถูกคืนกลับเข้าระบบ\nต้องการดำเนินการหรือไม่?')) {
-        return;
-      }
-      
-      // Return stock using transaction
-      returnStockAndUpdateStatus(order);
+      appConfirm({
+        type: 'warning', icon: '↩️',
+        title: 'ยืนยันการคืนสต๊อก',
+        subtitle: formatColorCode(order.colorCode) + ' · ' + formatSize(order.width) + '×' + formatSize(order.height),
+        message: 'จำนวน ' + order.quantity + ' ผืน · ผู้เบิก ' + order.displayName + '<br>❗ สต๊อกจะถูกคืนกลับเข้าระบบ',
+        okText: 'คืนสต๊อก'
+      }).then(function(ok) {
+        if (!ok) return;
+        returnStockAndUpdateStatus(order);
+      });
     }
 
     function bulkMarkMatched() {
@@ -3639,10 +3779,18 @@
         return '• ' + formatColorCode(o.colorCode) + ' ' + formatSize(o.width) + '×' + formatSize(o.height) + ' (' + o.quantity + ' ผืน) - ' + o.displayName;
       }).join('\n');
       
-      if (!confirm('✅ ยืนยันการเช็ครายการทั้งหมด ' + selectedOrders.length + ' รายการ\n\n' + summary + '\n\nต้องการเปลี่ยนสถานะเป็น "เช็คแล้ว" ทั้งหมดหรือไม่?')) {
-        return;
-      }
-      
+      appConfirm({
+        type: 'info', icon: '✅',
+        title: 'เช็ครายการทั้งหมด',
+        subtitle: selectedOrders.length + ' รายการ',
+        message: 'ต้องการเปลี่ยนสถานะทั้งหมดเป็น "เช็คแล้ว" หรือไม่?',
+        okText: 'เช็คทั้งหมด'
+      }).then(function(ok) {
+        if (!ok) return;
+        __bulkMarkMatchedDo(idsArray, selectedOrders);
+      });
+    }
+    function __bulkMarkMatchedDo(idsArray, selectedOrders) {
       var updates = {};
       var now = new Date().toISOString();
       idsArray.forEach(function(orderId) {
@@ -3652,7 +3800,7 @@
       });
       
       db.ref().update(updates).then(function() {
-        showToast('เปลี่ยนสถานะ ' + selectedOrders.length + ' รายการเรียบร้อย', 'success');
+        showToast('✅ เปลี่ยนสถานะ ' + selectedOrders.length + ' รายการเรียบร้อย', 'success');
         selectedOrderIds.clear();
         updateSelectedCount();
         document.getElementById('selectAllOrders').checked = false;
@@ -3676,22 +3824,26 @@
         return '• ' + formatColorCode(o.colorCode) + ' ' + formatSize(o.width) + '×' + formatSize(o.height) + ' (' + o.quantity + ' ผืน) - ' + o.displayName;
       }).join('\n');
       
-      if (!confirm('⚠️ ยืนยันการคืนสต๊อกทั้งหมด ' + selectedOrders.length + ' รายการ\n\n' + summary + '\n\n❗ สต๊อกจะถูกคืนกลับเข้าระบบทั้งหมด\nต้องการดำเนินการหรือไม่?')) {
-        return;
-      }
-      
-      var completed = 0;
-      var total = selectedOrders.length;
-      
-      selectedOrders.forEach(function(order) {
-        returnStockAndUpdateStatus(order, function() {
-          completed++;
-          if (completed === total) {
-            showToast('คืนสต๊อก ' + total + ' รายการเรียบร้อย', 'success');
-            selectedOrderIds.clear();
-            updateSelectedCount();
-            document.getElementById('selectAllOrders').checked = false;
-          }
+      appConfirm({
+        type: 'warning', icon: '↩️',
+        title: 'คืนสต๊อกทั้งหมด',
+        subtitle: selectedOrders.length + ' รายการ',
+        message: '❗ สต๊อกทั้งหมดจะถูกคืนกลับเข้าระบบ<br>ต้องการดำเนินการหรือไม่?',
+        okText: 'คืนทั้งหมด'
+      }).then(function(ok) {
+        if (!ok) return;
+        var completed = 0;
+        var total = selectedOrders.length;
+        selectedOrders.forEach(function(order) {
+          returnStockAndUpdateStatus(order, function() {
+            completed++;
+            if (completed === total) {
+              showToast('✅ คืนสต๊อก ' + total + ' รายการเรียบร้อย', 'success');
+              selectedOrderIds.clear();
+              updateSelectedCount();
+              document.getElementById('selectAllOrders').checked = false;
+            }
+          });
         });
       });
     }
@@ -4138,14 +4290,17 @@
       var color = allColors[colorId];
       if (!color) return;
       
-      if (!confirm('ต้องการลบสี "' + formatColorCode(color.colorCode) + '" หรือไม่?')) {
-        return;
-      }
-      
-      db.ref('colorChart/colors/' + colorId).remove().then(function() {
-        showToast('ลบสีเรียบร้อย', 'success');
-      }).catch(function(error) {
-        showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
+      appConfirm({
+        type: 'danger', icon: '🗑️',
+        title: 'ลบสี', subtitle: formatColorCode(color.colorCode),
+        message: 'ต้องการลบสีนี้ออกจาก Chart หรือไม่?', okText: 'ลบสี'
+      }).then(function(ok) {
+        if (!ok) return;
+        db.ref('colorChart/colors/' + colorId).remove().then(function() {
+          showToast('✅ ลบสีเรียบร้อย', 'success');
+        }).catch(function(error) {
+          showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
+        });
       });
     }
 
@@ -4289,14 +4444,17 @@
         return;
       }
       
-      if (!confirm('ต้องการลบกลุ่ม "' + cat.name + '" หรือไม่?')) {
-        return;
-      }
-      
-      db.ref('colorChart/categories/' + catId).remove().then(function() {
-        showToast('ลบกลุ่มเรียบร้อย', 'success');
-      }).catch(function(error) {
-        showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
+      appConfirm({
+        type: 'danger', icon: '🗑️',
+        title: 'ลบกลุ่มสี', subtitle: cat.name,
+        message: 'ต้องการลบกลุ่มนี้หรือไม่?', okText: 'ลบกลุ่ม'
+      }).then(function(ok) {
+        if (!ok) return;
+        db.ref('colorChart/categories/' + catId).remove().then(function() {
+          showToast('✅ ลบกลุ่มเรียบร้อย', 'success');
+        }).catch(function(error) {
+          showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
+        });
       });
     }
 
@@ -4377,12 +4535,110 @@
     var SEAM_TYPES = ['ไม่ต่อ', 'ต่อล่าง', 'ต่อข้าง', 'ต่อล่าง+ข้าง'];
 
     // เข้าหน้านำเข้า: โหลดครั้งแรกจาก DB
+    var importStockListener = null;
+
     function initImportSheet() {
       if (!importLoaded) {
         reloadImportFromDB();
       } else {
         renderImportTabs();
         renderImportGrid();
+      }
+      applyImportLockState();
+      startImportRealtimeListener();
+    }
+
+    // ฟังการเปลี่ยนแปลง stock แบบ realtime (เมื่อมีคนเบิก/คืน)
+    function startImportRealtimeListener() {
+      if (importStockListener) return; // ต่อไว้แล้ว
+      importStockListener = db.ref('stock').on('value', function(snapshot) {
+        // อัพเดทเฉพาะตอนอยู่หน้านำเข้า
+        if (currentPage !== 'pageImportStock') return;
+        var data = snapshot.val() || {};
+        syncImportFromRealtime(data);
+      });
+    }
+
+    // อัพเดทจำนวน realtime โดยไม่ทับข้อมูลที่ผู้ใช้กำลังแก้ (แท็บที่ dirty จะไม่ถูกแตะ)
+    function syncImportFromRealtime(data) {
+      captureCurrentGrid();
+      var changed = false;
+      Object.keys(data).forEach(function(code) {
+        var stockData = data[code] || {};
+        var items = stockData.items || [];
+        var newRows = items.map(function(it) {
+          return {
+            width: (it.width !== undefined && it.width !== null && it.width !== '') ? parseFloat(it.width).toFixed(2) : '',
+            height: (it.height !== undefined && it.height !== null && it.height !== '') ? parseFloat(it.height).toFixed(2) : '',
+            qty: (it.quantity !== undefined && it.quantity !== null) ? String(it.quantity) : '',
+            type: it.type || '', seam: it.seam || ''
+          };
+        });
+        if (!importTabs[code]) {
+          // รหัสใหม่ที่เพิ่งเกิดใน DB
+          importTabs[code] = { rows: newRows, dirty: false, isNew: false };
+          changed = true;
+        } else if (!importTabs[code].dirty) {
+          // อัพเดทเฉพาะแท็บที่ผู้ใช้ยังไม่แก้ (กันข้อมูลที่พิมพ์ค้างหาย)
+          importTabs[code].rows = newRows;
+          changed = true;
+        }
+      });
+      // ลบแท็บที่หายไปจาก DB (ถ้าไม่ dirty)
+      Object.keys(importTabs).forEach(function(code) {
+        if (!data[code] && !importTabs[code].dirty && !importTabs[code].isNew) {
+          delete importTabs[code];
+          if (currentImportTab === code) {
+            var codes = Object.keys(importTabs).sort(sortCodeAsc);
+            currentImportTab = codes.length ? codes[0] : null;
+          }
+          changed = true;
+        }
+      });
+      if (changed) {
+        renderImportTabs();
+        renderImportGrid();
+        applyImportLockState();
+      }
+    }
+
+    // Lock/unlock ทุกช่องตามสถานะเบิก: เปิดเบิก = ล็อก(ดูอย่างเดียว), ปิดเบิก = แก้ไขได้
+    function applyImportLockState() {
+      var locked = stockEnabled; // เปิดเบิกอยู่ = ล็อก
+      var page = document.getElementById('pageImportStock');
+      if (!page) return;
+
+      // ช่องกรอกในตาราง
+      page.querySelectorAll('#importSheetBody .sheet-cell').forEach(function(el) {
+        el.disabled = locked;
+      });
+      // ปุ่มต่างๆ ที่แก้ไขข้อมูล
+      var actionSelectors = [
+        '[onclick*="saveAllImportTabs"]', '[onclick*="promptAddImportTab"]',
+        '[onclick*="addImportRow"]', '[onclick*="addImportRows"]',
+        '[onclick*="sortCurrentTab"]', '[onclick*="renameCurrentTab"]',
+        '[onclick*="deleteCurrentTab"]', '.sheet-del-btn', '.sheet-tab-add'
+      ];
+      actionSelectors.forEach(function(sel) {
+        page.querySelectorAll(sel).forEach(function(btn) {
+          btn.disabled = locked;
+          btn.style.opacity = locked ? '0.4' : '';
+          btn.style.pointerEvents = locked ? 'none' : '';
+        });
+      });
+
+      // แถบแจ้งเตือนสถานะ
+      var banner = document.getElementById('importLockBanner');
+      if (banner) {
+        if (locked) {
+          banner.style.display = 'block';
+          banner.className = 'import-lock-banner locked';
+          banner.innerHTML = '🔒 <b>กำลังเปิดให้เบิก</b> — หน้านี้ล็อกไว้ (ดูได้อย่างเดียว) จำนวนสต๊อกอัพเดทสด · <b>ปิดการเบิก</b>เพื่อแก้ไข/นำเข้า';
+        } else {
+          banner.style.display = 'block';
+          banner.className = 'import-lock-banner unlocked';
+          banner.innerHTML = '✏️ <b>ปิดการเบิกอยู่</b> — แก้ไขและนำเข้าสต๊อกได้ กด <b>💾 บันทึกทั้งหมด</b> เมื่อเสร็จ';
+        }
       }
     }
 
@@ -4396,8 +4652,8 @@
           var items = stockData.items || [];
           var rows = items.map(function(it) {
             return {
-              width: (it.width !== undefined && it.width !== null) ? String(it.width) : '',
-              height: (it.height !== undefined && it.height !== null) ? String(it.height) : '',
+              width: (it.width !== undefined && it.width !== null && it.width !== '') ? parseFloat(it.width).toFixed(2) : '',
+              height: (it.height !== undefined && it.height !== null && it.height !== '') ? parseFloat(it.height).toFixed(2) : '',
               qty: (it.quantity !== undefined && it.quantity !== null) ? String(it.quantity) : '',
               type: it.type || '',
               seam: it.seam || ''
@@ -4461,54 +4717,78 @@
     }
 
     function promptAddImportTab() {
-      var code = prompt('กรอกรหัสสีใหม่ (เช่น A6, 734, 828-1):');
-      if (code === null) return;
-      code = code.trim().toUpperCase();
-      if (!code) { showToast('กรุณากรอกรหัสสี', 'warning'); return; }
-      if (importTabs[code]) {
-        showToast('มีรหัส ' + code + ' อยู่แล้ว สลับไปแท็บนั้นแทน', 'warning');
+      appPrompt({
+        title: 'เพิ่มรหัสสีใหม่',
+        subtitle: 'สร้างแท็บใหม่สำหรับกรอกสต๊อก',
+        placeholder: 'เช่น A6, 734, 828-1',
+        icon: '➕',
+        hint: '💡 แต่ละแท็บ = รหัสสี 1 รหัส'
+      }).then(function(code) {
+        if (code === null) return;
+        code = code.trim().toUpperCase();
+        if (!code) { showToast('กรุณากรอกรหัสสี', 'warning'); return; }
+        if (importTabs[code]) {
+          showToast('มีรหัส ' + code + ' อยู่แล้ว สลับไปแท็บนั้นแทน', 'warning');
+          captureCurrentGrid();
+          currentImportTab = code;
+          renderImportTabs(); renderImportGrid();
+          return;
+        }
         captureCurrentGrid();
+        importTabs[code] = { rows: [ blankRow() ], dirty: true, isNew: true };
         currentImportTab = code;
-        renderImportTabs(); renderImportGrid();
-        return;
-      }
-      captureCurrentGrid();
-      importTabs[code] = { rows: [ blankRow() ], dirty: true, isNew: true };
-      currentImportTab = code;
-      renderImportTabs();
-      renderImportGrid();
+        renderImportTabs();
+        renderImportGrid();
+        showToast('เพิ่มรหัสสี ' + code + ' แล้ว', 'success');
+      });
     }
 
     function renameCurrentTab() {
       if (!currentImportTab) return;
       var oldCode = currentImportTab;
-      var code = prompt('เปลี่ยนรหัสสี "' + oldCode + '" เป็น:', oldCode);
-      if (code === null) return;
-      code = code.trim().toUpperCase();
-      if (!code || code === oldCode) return;
-      if (importTabs[code]) { showToast('มีรหัส ' + code + ' อยู่แล้ว', 'error'); return; }
-      captureCurrentGrid();
-      importTabs[code] = importTabs[oldCode];
-      importTabs[code].dirty = true;
-      delete importTabs[oldCode];
-      // เก็บ oldCode ไว้เพื่อลบออกจาก DB ตอนบันทึก
-      importTabs[code].renamedFrom = oldCode;
-      currentImportTab = code;
-      renderImportTabs();
-      renderImportGrid();
+      appPrompt({
+        title: 'เปลี่ยนรหัสสี',
+        subtitle: 'เปลี่ยนจาก "' + oldCode + '" เป็นรหัสใหม่',
+        placeholder: 'รหัสสีใหม่',
+        value: oldCode,
+        icon: '✏️'
+      }).then(function(code) {
+        if (code === null) return;
+        code = code.trim().toUpperCase();
+        if (!code || code === oldCode) return;
+        if (importTabs[code]) { showToast('มีรหัส ' + code + ' อยู่แล้ว', 'error'); return; }
+        captureCurrentGrid();
+        importTabs[code] = importTabs[oldCode];
+        importTabs[code].dirty = true;
+        delete importTabs[oldCode];
+        importTabs[code].renamedFrom = oldCode;
+        currentImportTab = code;
+        renderImportTabs();
+        renderImportGrid();
+        showToast('เปลี่ยนรหัสเป็น ' + code + ' แล้ว', 'success');
+      });
     }
 
     function deleteCurrentTab() {
       if (!currentImportTab) return;
       var code = currentImportTab;
-      if (!confirm('ลบแท็บรหัสสี "' + code + '" ?\n\n(หากรหัสนี้มีอยู่ใน Database จะถูกลบออกเมื่อกดบันทึกทั้งหมด)')) return;
-      // ทำเครื่องหมายให้ลบจาก DB ตอนบันทึก
-      pendingDeleteCodes[code] = true;
-      delete importTabs[code];
-      var codes = Object.keys(importTabs).sort(sortCodeAsc);
-      currentImportTab = codes.length ? codes[0] : null;
-      renderImportTabs();
-      renderImportGrid();
+      appConfirm({
+        type: 'danger',
+        icon: '🗑️',
+        title: 'ลบแท็บรหัสสี',
+        subtitle: 'รหัสสี "' + code + '"',
+        message: 'หากรหัสนี้มีอยู่ใน Database จะถูกลบออกเมื่อกด <b>บันทึกทั้งหมด</b>',
+        okText: 'ลบแท็บ'
+      }).then(function(ok) {
+        if (!ok) return;
+        pendingDeleteCodes[code] = true;
+        delete importTabs[code];
+        var codes = Object.keys(importTabs).sort(sortCodeAsc);
+        currentImportTab = codes.length ? codes[0] : null;
+        renderImportTabs();
+        renderImportGrid();
+        showToast('ลบแท็บ ' + code + ' แล้ว (กดบันทึกเพื่อยืนยัน)', 'warning');
+      });
     }
 
     var pendingDeleteCodes = {};
@@ -4538,6 +4818,7 @@
       }
       body.innerHTML = html;
       attachGridEvents();
+      applyImportLockState();
     }
 
     function buildRowHtml(row, i) {
@@ -4551,9 +4832,9 @@
       });
       return '<tr data-idx="' + i + '">' +
         '<td class="row-num">' + (i + 1) + '</td>' +
-        '<td><input class="sheet-cell col-width" type="number" step="0.01" min="0" placeholder="1.20" value="' + attr(row.width) + '"></td>' +
-        '<td><input class="sheet-cell col-height" type="number" step="0.01" min="0" placeholder="1.60" value="' + attr(row.height) + '"></td>' +
-        '<td><input class="sheet-cell col-qty" type="number" min="0" placeholder="1" value="' + attr(row.qty) + '"></td>' +
+        '<td><input class="sheet-cell col-width" type="text" inputmode="decimal" placeholder="-" value="' + attr(row.width) + '"></td>' +
+        '<td><input class="sheet-cell col-height" type="text" inputmode="decimal" placeholder="-" value="' + attr(row.height) + '"></td>' +
+        '<td><input class="sheet-cell col-qty" type="text" inputmode="numeric" placeholder="-" value="' + attr(row.qty) + '"></td>' +
         '<td><select class="sheet-cell col-type">' + typeOpts + '</select></td>' +
         '<td><select class="sheet-cell col-seam">' + seamOpts + '</select></td>' +
         '<td class="del-cell"><button type="button" class="sheet-del-btn" onclick="deleteImportRow(' + i + ')">✕</button></td>' +
@@ -4597,6 +4878,15 @@
           markDirty();
           renderImportTabs(); // อัพเดท dirty dot + count
         });
+        // format ทศนิยม 2 ตำแหน่งเมื่อออกจากช่องกว้าง/สูง
+        if (cell.classList.contains('col-width') || cell.classList.contains('col-height')) {
+          cell.addEventListener('blur', function() {
+            var v = cell.value.trim().replace(',', '.');
+            if (v !== '' && !isNaN(parseFloat(v))) {
+              cell.value = parseFloat(v).toFixed(2);
+            }
+          });
+        }
         // Enter ที่ช่องต่อผ้า (ช่องสุดท้าย) = เพิ่มแถวใหม่
         cell.addEventListener('keydown', function(e) {
           if (e.key === 'Enter') {
@@ -4707,6 +4997,10 @@
 
     // ---------- บันทึกทั้งหมด ----------
     function saveAllImportTabs() {
+      if (stockEnabled) {
+        showToast('⚠️ กรุณาปิดการเบิกก่อน จึงจะแก้ไข/บันทึกสต๊อกได้', 'warning');
+        return;
+      }
       captureCurrentGrid();
 
       // ตรวจสอบความถูกต้องทุกแท็บ
@@ -5135,18 +5429,22 @@
     }
 
     function confirmDeleteUser(username) {
-      if (!confirm('ต้องการลบผู้ใช้ ' + username + ' หรือไม่?')) return;
-      
-      showLoading();
-      
-      db.ref('users/' + username).remove().then(function() {
-        hideLoading();
-        showToast('ลบผู้ใช้สำเร็จ', 'success');
-        loadUsers();
-        logActivity('delete_user', 'ลบผู้ใช้ ' + username);
-      }).catch(function(error) {
-        hideLoading();
-        showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
+      appConfirm({
+        type: 'danger', icon: '🗑️',
+        title: 'ลบผู้ใช้', subtitle: username,
+        message: 'ต้องการลบผู้ใช้นี้ออกจากระบบหรือไม่?', okText: 'ลบผู้ใช้'
+      }).then(function(ok) {
+        if (!ok) return;
+        showLoading();
+        db.ref('users/' + username).remove().then(function() {
+          hideLoading();
+          showToast('✅ ลบผู้ใช้สำเร็จ', 'success');
+          loadUsers();
+          logActivity('delete_user', 'ลบผู้ใช้ ' + username);
+        }).catch(function(error) {
+          hideLoading();
+          showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
+        });
       });
     }
 
