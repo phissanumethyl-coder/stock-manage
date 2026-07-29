@@ -4766,11 +4766,25 @@
         var active = (code === currentImportTab) ? ' active' : '';
         var dirty = tab.dirty ? '<span class="tab-dirty" title="ยังไม่บันทึก"></span>' : '';
         var count = tab.rows.length;
-        html += '<div class="sheet-tab' + active + '" onclick="switchImportTab(\'' + encodeURIComponent(code) + '\')">' +
+        html += '<div class="sheet-tab' + active + '" data-tab-code="' + escapeHtml(code) + '" onclick="switchImportTab(\'' + encodeURIComponent(code) + '\')">' +
                 dirty + '<span>' + escapeHtml(code) + '</span>' +
                 '<span class="tab-badge">' + count + '</span></div>';
       });
       container.innerHTML = html;
+      scrollActiveTabIntoView();
+    }
+
+    // เลื่อนแท็บที่เลือกให้อยู่ในมุมมอง (auto-scroll เฉพาะแถบแท็บ ไม่เลื่อนทั้งหน้า)
+    function scrollActiveTabIntoView() {
+      var container = document.getElementById('sheetTabs');
+      if (!container) return;
+      var activeTab = container.querySelector('.sheet-tab.active');
+      if (!activeTab) return;
+      // คำนวณตำแหน่งให้แท็บอยู่กลางแถบ
+      var target = activeTab.offsetLeft - (container.clientWidth / 2) + (activeTab.offsetWidth / 2);
+      var maxScroll = container.scrollWidth - container.clientWidth;
+      target = Math.max(0, Math.min(target, maxScroll));
+      container.scrollTo({ left: target, behavior: 'smooth' });
     }
 
     function switchImportTab(codeEnc) {
