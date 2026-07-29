@@ -434,6 +434,23 @@
     input:checked+.toggle-slider:before{transform:translateX(20px)}
     .stock-toggle-wrapper{display:flex;align-items:center;gap:12px;padding:8px 16px;background:var(--bg-secondary);border-radius:var(--radius-md)}
     .stock-toggle-label{font-size:14px;font-weight:500;color:var(--text-primary);white-space:nowrap}
+    .header-stock-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    @media(max-width:900px){.header-stock-controls .stock-toggle-wrapper{padding:6px 10px}.header-stock-controls .stock-toggle-label{font-size:12px}}
+    /* Google-Sheet style import table */
+    .sheet-hint{background:#eef6ff;border:1px solid #cfe4ff;color:#0b5cad;font-size:13px;padding:10px 14px;border-radius:var(--radius-sm);margin-bottom:16px;line-height:1.6}
+    .sheet-table-wrapper{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius-sm)}
+    .sheet-table{width:100%;border-collapse:collapse;font-size:14px}
+    .sheet-table thead th{background:var(--bg-secondary);text-align:left;padding:10px 12px;font-weight:600;color:var(--text-primary);border-bottom:2px solid var(--border);border-right:1px solid var(--border);white-space:nowrap;position:sticky;top:0}
+    .sheet-table thead th .req{color:var(--danger)}
+    .sheet-table thead th .th-sub{font-size:11px;font-weight:400;color:var(--text-tertiary);margin-top:2px}
+    .sheet-table tbody td{padding:0;border-bottom:1px solid var(--border);border-right:1px solid var(--border)}
+    .sheet-table tbody td.row-num{text-align:center;color:var(--text-tertiary);font-size:13px;background:var(--bg-secondary);width:40px}
+    .sheet-table tbody td.del-cell{text-align:center}
+    .sheet-cell{width:100%;border:none;background:transparent;padding:10px 12px;font-family:inherit;font-size:14px;font-weight:300;color:var(--text-primary);outline:none}
+    .sheet-cell:focus{background:#e8f2ff;box-shadow:inset 0 0 0 2px var(--accent)}
+    .sheet-cell.invalid{background:#ffe9e7;box-shadow:inset 0 0 0 2px var(--danger)}
+    .sheet-del-btn{background:transparent;border:none;color:var(--danger);cursor:pointer;font-size:16px;padding:6px 10px;border-radius:6px}
+    .sheet-del-btn:hover{background:#ffe9e7}
     .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}
     .modal-overlay.open{display:flex}
     .modal{background:var(--bg-primary);border-radius:var(--radius-xl);width:100%;max-width:500px;max-height:90vh;overflow-y:auto;animation:modalIn .15s ease-out}
@@ -652,6 +669,15 @@
       <div class="header-content">
         <div class="header-brand"><h1>📦 Stock Manager</h1></div>
         <div class="header-user">
+          <!-- Stock controls (staff/admin only) -->
+          <div id="headerStockControls" class="header-stock-controls" style="display:none;">
+            <div class="stock-toggle-wrapper">
+              <span class="stock-toggle-label">สถานะการเบิก</span>
+              <label class="toggle-switch"><input type="checkbox" id="toggleStockStatus" checked><span class="toggle-slider"></span></label>
+            </div>
+            <button class="btn btn-warning btn-sm" onclick="openAutoCloseModal()">⏰ ตั้งเวลาปิด</button>
+            <button class="btn btn-secondary btn-sm" onclick="openAnnouncementEditor()">📢 ประกาศ</button>
+          </div>
           <!-- Online Users Badge (staff/admin only) -->
           <div id="onlineUsersBadge" class="online-badge" style="display:none;" onclick="openOnlineUsersModal()">
             <span class="online-dot"></span>
@@ -717,32 +743,6 @@
             <div class="date-filter"><input type="date" id="myHistoryStartDate" class="date-input"><span>ถึง</span><input type="date" id="myHistoryEndDate" class="date-input"><button id="filterMyHistoryBtn" class="btn btn-primary btn-sm">กรอง</button></div>
           </div>
           <div class="table-container"><table><thead><tr><th>วันที่/เวลา</th><th>รหัสสี</th><th>ขนาด</th><th>ประเภท</th><th>จำนวน</th><th>สถานะ</th><th>หมายเหตุ</th><th>จัดการ</th></tr></thead><tbody id="myHistoryTable"></tbody></table></div>
-        </div>
-      </div>
-
-      <div id="pageManageStock" class="page">
-        <div class="card">
-          <div class="card-header">
-            <h2 class="card-title">จัดการสต๊อก<span class="live-indicator"><span class="live-dot"></span>Live</span></h2>
-            <div class="flex items-center gap-4">
-              <div class="stock-toggle-wrapper">
-                <span class="stock-toggle-label">สถานะการเบิก</span>
-                <label class="toggle-switch"><input type="checkbox" id="toggleStockStatus" checked><span class="toggle-slider"></span></label>
-              </div>
-              <button class="btn btn-warning btn-sm" onclick="openAutoCloseModal()">⏰ ตั้งเวลาปิด</button>
-              <button class="btn btn-secondary btn-sm" onclick="openAnnouncementEditor()">📢 ประกาศ</button>
-              <button id="addStockItemBtn" class="btn btn-primary btn-sm">+ เพิ่มสินค้า</button>
-              <button id="exportAllStockBtn" class="btn btn-export btn-sm">📥 Export สต๊อกทั้งหมด</button>
-            </div>
-          </div>
-          <div class="search-section">
-            <div class="search-input-group">
-              <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
-              <input type="text" id="manageSearchCode" class="search-input" placeholder="ค้นหารหัสสี...">
-            </div>
-            <button id="manageSearchBtn" class="btn btn-primary">ค้นหา</button>
-          </div>
-          <div class="table-container"><table><thead><tr><th>รหัสสี</th><th>ขนาด</th><th>ประเภท</th><th>จำนวน</th><th>จัดการ</th></tr></thead><tbody id="manageStockTable"></tbody></table></div>
         </div>
       </div>
 
@@ -860,69 +860,63 @@
       </div>
 
       <div id="pageImportStock" class="page">
-        <div style="display:grid;grid-template-columns:400px 1fr;gap:20px;">
-          <div class="card">
-            <div class="card-header"><h2 class="card-title">📥 นำเข้าสต๊อก</h2></div>
-            <form id="importStockForm" style="padding:0 24px 24px;">
-              <div class="form-group">
-                <label>รหัสสี (Sheet Name)</label>
-                <input type="text" id="importSheetName" class="form-input" placeholder="เช่น ABC-001" required>
-              </div>
-              <div class="form-group">
-                <label>รหัสผ้าม่าน</label>
-                <input type="text" id="importColorCode" class="form-input" placeholder="เช่น ABC-001-WH" required>
-              </div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-                <div class="form-group">
-                  <label>ความกว้าง (ม.)</label>
-                  <input type="number" id="importWidth" class="form-input" step="0.1" min="0" placeholder="2.0" required>
-                </div>
-                <div class="form-group">
-                  <label>ความสูง (ม.)</label>
-                  <input type="number" id="importHeight" class="form-input" step="0.1" min="0" placeholder="2.5" required>
-                </div>
-              </div>
-              <div class="form-group">
-                <label>ประเภทผ้า</label>
-                <input type="text" id="importType" class="form-input" placeholder="เช่น ผ้าทึบ, ผ้าโปร่ง">
-              </div>
-              <div class="form-group">
-                <label>จำนวนที่นำเข้า</label>
-                <input type="number" id="importQuantity" class="form-input" min="1" placeholder="50" required>
-              </div>
-              <div class="form-group">
-                <label>ประเภทการนำเข้า</label>
-                <select id="importTypeAction" class="form-input">
-                  <option value="new">รับสินค้าใหม่</option>
-                  <option value="return">คืนจากลูกค้า</option>
-                  <option value="transfer">โอนจากสาขาอื่น</option>
-                  <option value="adjust">ปรับปรุงสต๊อก</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>หมายเหตุ / เลขที่ PO</label>
-                <input type="text" id="importNotes" class="form-input" placeholder="เช่น PO-2025-001">
-              </div>
-              <button type="submit" class="btn btn-primary" style="width:100%;margin-top:8px;">📥 นำเข้าสต๊อก</button>
-            </form>
-          </div>
-          <div class="card">
-            <div class="card-header">
-              <h2 class="card-title">📋 ประวัติการนำเข้า<span class="live-indicator"><span class="live-dot"></span>Live</span></h2>
-              <div class="date-filter">
-                <input type="date" id="importHistoryStartDate" class="date-input">
-                <span>ถึง</span>
-                <input type="date" id="importHistoryEndDate" class="date-input">
-                <button id="filterImportHistoryBtn" class="btn btn-primary btn-sm">กรอง</button>
-                <button id="exportImportHistoryBtn" class="btn btn-export btn-sm">📥 Export</button>
-              </div>
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">📥 นำเข้าสต๊อก (กรอกแบบตาราง)</h2>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <span style="font-size:13px;color:var(--text-tertiary);">โหมดนำเข้า:</span>
+              <select id="importTypeAction" class="form-input" style="width:auto;padding:6px 10px;">
+                <option value="new">รับสินค้าใหม่</option>
+                <option value="return">คืนจากลูกค้า</option>
+                <option value="transfer">โอนจากสาขาอื่น</option>
+                <option value="adjust">ปรับปรุงสต๊อก</option>
+              </select>
             </div>
-            <div class="table-container">
-              <table>
-                <thead><tr><th>วันที่/เวลา</th><th>รหัสสี</th><th>ขนาด</th><th>ประเภทผ้า</th><th>จำนวน</th><th>ประเภท</th><th>หมายเหตุ</th><th>ผู้นำเข้า</th></tr></thead>
-                <tbody id="importHistoryTable"></tbody>
+          </div>
+          <div style="padding:0 24px 24px;">
+            <div class="sheet-hint">
+              💡 กรอกข้อมูลเหมือน Google Sheet ได้เลย — พิมพ์ <b>Tab</b> เพื่อข้ามช่อง, กด <b>Enter</b> ที่ช่องสุดท้ายเพื่อเพิ่มแถวใหม่, วางข้อมูลจาก Excel/Sheet ได้ (Ctrl+V)
+            </div>
+            <div class="sheet-table-wrapper">
+              <table class="sheet-table" id="importSheetTable">
+                <thead>
+                  <tr>
+                    <th style="width:40px;">#</th>
+                    <th>รหัสผ้าม่าน <span class="req">*</span><div class="th-sub">เช่น 734, 828-1, A4, 2021-5, Z05</div></th>
+                    <th style="width:130px;">กว้าง (ซม.) <span class="req">*</span></th>
+                    <th style="width:130px;">สูง (ซม.) <span class="req">*</span></th>
+                    <th style="width:130px;">จำนวน (ม้วน) <span class="req">*</span></th>
+                    <th style="width:60px;">ลบ</th>
+                  </tr>
+                </thead>
+                <tbody id="importSheetBody"></tbody>
               </table>
             </div>
+            <div style="display:flex;gap:12px;margin-top:16px;flex-wrap:wrap;">
+              <button type="button" class="btn btn-secondary" onclick="addSheetRow()">+ เพิ่มแถว</button>
+              <button type="button" class="btn btn-secondary" onclick="addSheetRows(10)">+ เพิ่ม 10 แถว</button>
+              <button type="button" class="btn btn-warning btn-sm" onclick="clearSheetRows()">🗑️ ล้างตาราง</button>
+              <button type="button" class="btn btn-primary" style="margin-left:auto;" onclick="submitImportSheet()">📥 บันทึกนำเข้าทั้งหมด</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:20px;">
+          <div class="card-header">
+            <h2 class="card-title">📋 ประวัติการนำเข้า<span class="live-indicator"><span class="live-dot"></span>Live</span></h2>
+            <div class="date-filter">
+              <input type="date" id="importHistoryStartDate" class="date-input">
+              <span>ถึง</span>
+              <input type="date" id="importHistoryEndDate" class="date-input">
+              <button id="filterImportHistoryBtn" class="btn btn-primary btn-sm">กรอง</button>
+              <button id="exportImportHistoryBtn" class="btn btn-export btn-sm">📥 Export</button>
+            </div>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead><tr><th>วันที่/เวลา</th><th>รหัสผ้าม่าน</th><th>ขนาด</th><th>จำนวน</th><th>ประเภท</th><th>ผู้นำเข้า</th></tr></thead>
+              <tbody id="importHistoryTable"></tbody>
+            </table>
           </div>
         </div>
       </div>
@@ -1420,8 +1414,8 @@
     
     var navConfig = {
       sales: [{id:'withdraw',label:'เบิกสต๊อก',page:'pageWithdraw'},{id:'colorChart',label:'Shart สี',page:'pageColorChart'},{id:'myHistory',label:'ประวัติของฉัน',page:'pageMyHistory'},{id:'dashboard',label:'Dashboard',page:'pageDashboard'}],
-      staff: [{id:'withdraw',label:'เบิกสต๊อก',page:'pageWithdraw'},{id:'colorChart',label:'Shart สี',page:'pageColorChart'},{id:'myHistory',label:'ประวัติของฉัน',page:'pageMyHistory'},{id:'orderMatching',label:'จับคู่ออเดอร์',page:'pageOrderMatching'},{id:'manageStock',label:'จัดการสต๊อก',page:'pageManageStock'},{id:'transactions',label:'ประวัติการเบิก',page:'pageTransactions'},{id:'dashboard',label:'Dashboard',page:'pageDashboard'}],
-      admin: [{id:'withdraw',label:'เบิกสต๊อก',page:'pageWithdraw'},{id:'colorChart',label:'Shart สี',page:'pageColorChart'},{id:'orderMatching',label:'จับคู่ออเดอร์',page:'pageOrderMatching'},{id:'manageStock',label:'จัดการสต๊อก',page:'pageManageStock'},{id:'importStock',label:'นำเข้าสต๊อก',page:'pageImportStock'},{id:'transactions',label:'ประวัติการเบิก',page:'pageTransactions'},{id:'dashboard',label:'Dashboard',page:'pageDashboard'},{id:'users',label:'ผู้ใช้งาน',page:'pageUsers'},{id:'activityLog',label:'Activity Log',page:'pageActivityLog'}]
+      staff: [{id:'withdraw',label:'เบิกสต๊อก',page:'pageWithdraw'},{id:'colorChart',label:'Shart สี',page:'pageColorChart'},{id:'myHistory',label:'ประวัติของฉัน',page:'pageMyHistory'},{id:'orderMatching',label:'จับคู่ออเดอร์',page:'pageOrderMatching'},{id:'transactions',label:'ประวัติการเบิก',page:'pageTransactions'},{id:'dashboard',label:'Dashboard',page:'pageDashboard'}],
+      admin: [{id:'withdraw',label:'เบิกสต๊อก',page:'pageWithdraw'},{id:'colorChart',label:'Shart สี',page:'pageColorChart'},{id:'orderMatching',label:'จับคู่ออเดอร์',page:'pageOrderMatching'},{id:'importStock',label:'นำเข้าสต๊อก',page:'pageImportStock'},{id:'transactions',label:'ประวัติการเบิก',page:'pageTransactions'},{id:'dashboard',label:'Dashboard',page:'pageDashboard'},{id:'users',label:'ผู้ใช้งาน',page:'pageUsers'},{id:'activityLog',label:'Activity Log',page:'pageActivityLog'}]
     };
 
     // ============================================
@@ -1707,9 +1701,10 @@
       initPresence(); // เริ่ม presence system
       initCountdown(); // เริ่ม countdown
       
-      // แสดง Online Badge สำหรับ staff/admin
+      // แสดง Online Badge + Stock Controls สำหรับ staff/admin
       if (currentUser.role === 'staff' || currentUser.role === 'admin') {
         document.getElementById('onlineUsersBadge').style.display = 'inline-flex';
+        document.getElementById('headerStockControls').style.display = 'flex';
       }
       
       var firstTab = navConfig[currentUser.role][0];
@@ -2048,8 +2043,7 @@
         }
       }
       else if (pageId === 'pageMyHistory') loadMyHistory();
-      else if (pageId === 'pageManageStock') loadStockStatus();
-      else if (pageId === 'pageImportStock') loadImportHistory();
+      else if (pageId === 'pageImportStock') { initImportSheet(); loadImportHistory(); }
       else if (pageId === 'pageTransactions') loadTransactions();
       else if (pageId === 'pageDashboard') loadDashboard();
       else if (pageId === 'pageUsers') loadUsers();
@@ -2852,65 +2846,6 @@
       db.ref('config/STOCK_ENABLED').set(enabled ? 'TRUE' : 'FALSE').then(function() {
         showToast(enabled ? 'เปิดการเบิกแล้ว' : 'ปิดการเบิกแล้ว', 'success');
         logActivity('toggle_stock', enabled ? 'เปิดการเบิก' : 'ปิดการเบิก');
-      });
-    }
-
-    function handleManageSearch() {
-      var colorCode = document.getElementById('manageSearchCode').value.trim();
-      if (!colorCode) {
-        showToast('กรุณาระบุรหัสสี', 'warning');
-        return;
-      }
-      
-      var stockData = allStock[colorCode];
-      if (!stockData || !stockData.items) {
-        showToast('ไม่พบรหัสสี ' + colorCode, 'error');
-        return;
-      }
-      
-      renderManageStockTable(stockData.items, colorCode);
-    }
-
-    function renderManageStockTable(items, sheetName) {
-      var tbody = document.getElementById('manageStockTable');
-      
-      if (!items || items.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center">ไม่พบข้อมูล</td></tr>';
-        return;
-      }
-      
-      var html = '';
-      for (var i = 0; i < items.length; i++) {
-        var item = items[i];
-        html += '<tr>';
-        html += '<td>' + formatSize(item.width) + ' × ' + formatSize(item.height) + '</td>';
-        html += '<td>' + (item.type || '-') + '</td>';
-        html += '<td>' + item.quantity + '</td>';
-        html += '<td><input type="number" class="form-input" style="width:80px" value="' + item.quantity + '" data-sheet="' + sheetName + '" data-row="' + item.row + '" data-index="' + i + '"></td>';
-        html += '<td><button class="btn btn-primary btn-sm" onclick="updateStockQty(this)">บันทึก</button></td>';
-        html += '</tr>';
-      }
-      
-      tbody.innerHTML = html;
-    }
-
-    function updateStockQty(btn) {
-      var row = btn.closest('tr');
-      var input = row.querySelector('input[type="number"]');
-      var sheetName = input.getAttribute('data-sheet');
-      var itemIndex = parseInt(input.getAttribute('data-index'));
-      var newQty = parseInt(input.value);
-      
-      if (isNaN(newQty) || newQty < 0) {
-        showToast('จำนวนไม่ถูกต้อง', 'error');
-        return;
-      }
-      
-      db.ref('stock/' + sheetName + '/items/' + itemIndex + '/quantity').set(newQty).then(function() {
-        showToast('บันทึกสำเร็จ', 'success');
-        logActivity('update_stock', 'อัพเดทสต๊อก ' + sheetName + ' = ' + newQty);
-      }).catch(function(error) {
-        showToast('เกิดข้อผิดพลาด', 'error');
       });
     }
 
@@ -4335,7 +4270,7 @@
       var tbody = document.getElementById('importHistoryTable');
       
       if (!imports || imports.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" class="text-center">ไม่พบข้อมูล</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center">ไม่พบข้อมูล</td></tr>';
         return;
       }
       
@@ -4345,11 +4280,10 @@
         html += '<tr>';
         html += '<td>' + formatDateTime(imp.timestamp) + '</td>';
         html += '<td>' + imp.colorCode + '</td>';
-        html += '<td>' + formatSize(imp.width) + ' × ' + formatSize(imp.height) + '</td>';
-        html += '<td>' + (imp.type || '-') + '</td>';
+        html += '<td>' + formatSize(imp.width) + ' × ' + formatSize(imp.height) + ' ซม.</td>';
         html += '<td class="qty-change positive">+' + imp.quantity + '</td>';
         html += '<td><span class="import-type-badge ' + imp.importType + '">' + getImportTypeLabel(imp.importType) + '</span></td>';
-        html += '<td>' + (imp.notes || '-') + '</td>';
+        html += '<td>' + (imp.importedBy || '-') + '</td>';
         html += '</tr>';
       }
       
@@ -4361,80 +4295,266 @@
       return labels[type] || type;
     }
 
-    function handleImportStock(e) {
-      e.preventDefault();
-      
-      var colorCode = document.getElementById('importColorCode').value.trim();
-      var width = document.getElementById('importWidth').value;
-      var height = document.getElementById('importHeight').value;
-      var type = document.getElementById('importType').value;
-      var quantity = parseInt(document.getElementById('importQuantity').value);
-      var importType = document.getElementById('importTypeAction').value;
-      var notes = document.getElementById('importNotes').value;
-      
-      if (!colorCode || !width || !height || !quantity) {
-        showToast('กรุณากรอกข้อมูลให้ครบ', 'warning');
-        return;
+    function exportImportHistory() {
+      db.ref('imports').orderByChild('timestamp').limitToLast(1000).once('value').then(function(snapshot) {
+        var imports = [];
+        snapshot.forEach(function(child) { imports.push(child.val()); });
+        imports.reverse();
+        if (imports.length === 0) { showToast('ไม่มีข้อมูลให้ export', 'warning'); return; }
+        var csv = '\uFEFF';
+        csv += 'วันที่/เวลา,รหัสผ้าม่าน,กว้าง,สูง,จำนวน,ประเภท,ผู้นำเข้า\n';
+        for (var i = 0; i < imports.length; i++) {
+          var imp = imports[i];
+          csv += imp.timestamp + ',' + imp.colorCode + ',' + imp.width + ',' + imp.height + ',';
+          csv += imp.quantity + ',' + getImportTypeLabel(imp.importType) + ',' + (imp.importedBy || '') + '\n';
+        }
+        var blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+        var link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'import_history_' + new Date().toISOString().split('T')[0] + '.csv';
+        link.click();
+        showToast('Export สำเร็จ', 'success');
+      });
+    }
+
+    // ============================================
+    // IMPORT STOCK - Google Sheet style grid
+    // ============================================
+    var sheetRowSeq = 0;
+
+    function createSheetRow(data) {
+      data = data || {};
+      sheetRowSeq++;
+      var tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td class="row-num"></td>' +
+        '<td><input class="sheet-cell col-code" type="text" placeholder="เช่น 734" value="' + (data.code || '') + '"></td>' +
+        '<td><input class="sheet-cell col-width" type="number" step="0.1" min="0" placeholder="150" value="' + (data.width || '') + '"></td>' +
+        '<td><input class="sheet-cell col-height" type="number" step="0.1" min="0" placeholder="160" value="' + (data.height || '') + '"></td>' +
+        '<td><input class="sheet-cell col-qty" type="number" min="0" placeholder="10" value="' + (data.qty || '') + '"></td>' +
+        '<td class="del-cell"><button type="button" class="sheet-del-btn" onclick="deleteSheetRow(this)">✕</button></td>';
+      return tr;
+    }
+
+    function addSheetRow(data) {
+      var body = document.getElementById('importSheetBody');
+      var tr = createSheetRow(data);
+      body.appendChild(tr);
+      renumberSheetRows();
+      attachSheetCellEvents(tr);
+      return tr;
+    }
+
+    function addSheetRows(n) {
+      for (var i = 0; i < n; i++) addSheetRow();
+    }
+
+    function deleteSheetRow(btn) {
+      var body = document.getElementById('importSheetBody');
+      btn.closest('tr').remove();
+      if (body.children.length === 0) addSheetRow();
+      renumberSheetRows();
+    }
+
+    function clearSheetRows() {
+      document.getElementById('importSheetBody').innerHTML = '';
+      addSheetRows(5);
+    }
+
+    function renumberSheetRows() {
+      var rows = document.getElementById('importSheetBody').children;
+      for (var i = 0; i < rows.length; i++) {
+        rows[i].querySelector('.row-num').textContent = (i + 1);
       }
-      
-      showLoading();
-      
-      // Find or create stock item
-      var stockRef = db.ref('stock/' + colorCode);
-      
-      stockRef.once('value').then(function(snapshot) {
-        var stockData = snapshot.val() || { sheetName: colorCode, items: [] };
-        var items = stockData.items || [];
-        
-        // Find existing item with same width/height/type
-        var existingIndex = -1;
-        for (var i = 0; i < items.length; i++) {
-          if (Math.abs(parseFloat(items[i].width) - parseFloat(width)) < 0.01 &&
-              Math.abs(parseFloat(items[i].height) - parseFloat(height)) < 0.01 &&
-              items[i].type === type) {
-            existingIndex = i;
-            break;
+    }
+
+    function attachSheetCellEvents(tr) {
+      var cells = tr.querySelectorAll('.sheet-cell');
+      cells.forEach(function(cell) {
+        // Enter on last cell => add new row
+        cell.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            if (cell.classList.contains('col-qty')) {
+              var body = document.getElementById('importSheetBody');
+              var isLast = tr === body.lastElementChild;
+              if (isLast) {
+                var newRow = addSheetRow();
+                newRow.querySelector('.col-code').focus();
+              } else {
+                var next = tr.nextElementSibling;
+                if (next) next.querySelector('.col-code').focus();
+              }
+            }
           }
+        });
+        // Paste from Excel/Sheet (tab/newline separated)
+        cell.addEventListener('paste', function(e) {
+          var text = (e.clipboardData || window.clipboardData).getData('text');
+          if (text && (text.indexOf('\t') !== -1 || text.trim().indexOf('\n') !== -1)) {
+            e.preventDefault();
+            handleSheetPaste(text, cell, tr);
+          }
+        });
+      });
+    }
+
+    function handleSheetPaste(text, startCell, startTr) {
+      var rows = text.replace(/\r/g, '').split('\n').filter(function(r){ return r.trim() !== ''; });
+      var colOrder = ['col-code', 'col-width', 'col-height', 'col-qty'];
+      var startColClass = colOrder.find(function(c){ return startCell.classList.contains(c); }) || 'col-code';
+      var startColIdx = colOrder.indexOf(startColClass);
+      var body = document.getElementById('importSheetBody');
+      var allRows = Array.prototype.slice.call(body.children);
+      var startRowIdx = allRows.indexOf(startTr);
+
+      for (var r = 0; r < rows.length; r++) {
+        var cols = rows[r].split('\t');
+        var targetRowIdx = startRowIdx + r;
+        var targetTr = body.children[targetRowIdx];
+        if (!targetTr) targetTr = addSheetRow();
+        for (var c = 0; c < cols.length; c++) {
+          var colIdx = startColIdx + c;
+          if (colIdx >= colOrder.length) break;
+          var input = targetTr.querySelector('.' + colOrder[colIdx]);
+          if (input) input.value = cols[c].trim();
         }
-        
-        if (existingIndex >= 0) {
-          items[existingIndex].quantity = (items[existingIndex].quantity || 0) + quantity;
-        } else {
-          items.push({
-            row: items.length + 2,
-            colorCode: colorCode,
-            width: parseFloat(width),
-            height: parseFloat(height),
-            type: type,
-            quantity: quantity
-          });
-        }
-        
-        stockData.items = items;
-        stockData.lastUpdated = new Date().toISOString();
-        
-        return stockRef.set(stockData);
-      }).then(function() {
-        // Log import
-        var importRecord = {
-          timestamp: new Date().toISOString(),
-          colorCode: colorCode,
+      }
+      renumberSheetRows();
+      showToast('วางข้อมูล ' + rows.length + ' แถวแล้ว', 'success');
+    }
+
+    function initImportSheet() {
+      var body = document.getElementById('importSheetBody');
+      if (body && body.children.length === 0) {
+        addSheetRows(5);
+      }
+    }
+
+    function submitImportSheet() {
+      var rows = document.getElementById('importSheetBody').children;
+      var importType = document.getElementById('importTypeAction').value;
+      var validRows = [];
+      var hasError = false;
+
+      // reset invalid marks
+      document.querySelectorAll('.sheet-cell.invalid').forEach(function(c){ c.classList.remove('invalid'); });
+
+      for (var i = 0; i < rows.length; i++) {
+        var tr = rows[i];
+        var codeEl = tr.querySelector('.col-code');
+        var widthEl = tr.querySelector('.col-width');
+        var heightEl = tr.querySelector('.col-height');
+        var qtyEl = tr.querySelector('.col-qty');
+
+        var code = codeEl.value.trim();
+        var width = widthEl.value.trim();
+        var height = heightEl.value.trim();
+        var qty = qtyEl.value.trim();
+
+        // skip fully empty rows
+        if (!code && !width && !height && !qty) continue;
+
+        var rowError = false;
+        if (!code) { codeEl.classList.add('invalid'); rowError = true; }
+        if (!width || parseFloat(width) <= 0) { widthEl.classList.add('invalid'); rowError = true; }
+        if (!height || parseFloat(height) <= 0) { heightEl.classList.add('invalid'); rowError = true; }
+        if (!qty || parseInt(qty) <= 0) { qtyEl.classList.add('invalid'); rowError = true; }
+
+        if (rowError) { hasError = true; continue; }
+
+        validRows.push({
+          code: code.toUpperCase(),
           width: parseFloat(width),
           height: parseFloat(height),
-          type: type,
-          quantity: quantity,
-          importType: importType,
-          notes: notes,
-          importedBy: currentUser.username
-        };
-        
-        return db.ref('imports').push(importRecord);
+          qty: parseInt(qty)
+        });
+      }
+
+      if (hasError) {
+        showToast('มีบางแถวกรอกไม่ครบ (ช่องสีแดง) กรุณาแก้ไข', 'warning');
+        return;
+      }
+      if (validRows.length === 0) {
+        showToast('กรุณากรอกข้อมูลอย่างน้อย 1 แถว', 'warning');
+        return;
+      }
+
+      showLoading();
+
+      // Group rows by รหัสผ้าม่าน (sheetName)
+      var byCode = {};
+      validRows.forEach(function(r) {
+        if (!byCode[r.code]) byCode[r.code] = [];
+        byCode[r.code].push(r);
+      });
+
+      var codes = Object.keys(byCode);
+      var chain = Promise.resolve();
+      var importRecords = [];
+
+      codes.forEach(function(code) {
+        chain = chain.then(function() {
+          var stockRef = db.ref('stock/' + code);
+          return stockRef.once('value').then(function(snapshot) {
+            var stockData = snapshot.val() || { sheetName: code, items: [] };
+            var items = stockData.items || [];
+
+            byCode[code].forEach(function(r) {
+              // merge with existing same width/height
+              var idx = -1;
+              for (var j = 0; j < items.length; j++) {
+                if (Math.abs(parseFloat(items[j].width) - r.width) < 0.01 &&
+                    Math.abs(parseFloat(items[j].height) - r.height) < 0.01) {
+                  idx = j; break;
+                }
+              }
+              if (idx >= 0) {
+                items[idx].quantity = (items[idx].quantity || 0) + r.qty;
+              } else {
+                items.push({
+                  row: items.length + 2,
+                  colorCode: code,
+                  width: r.width,
+                  height: r.height,
+                  type: '',
+                  quantity: r.qty
+                });
+              }
+              importRecords.push({
+                timestamp: new Date().toISOString(),
+                colorCode: code,
+                width: r.width,
+                height: r.height,
+                type: '',
+                quantity: r.qty,
+                importType: importType,
+                notes: '',
+                importedBy: currentUser.username
+              });
+            });
+
+            stockData.items = items;
+            stockData.lastUpdated = new Date().toISOString();
+            return stockRef.set(stockData);
+          });
+        });
+      });
+
+      chain.then(function() {
+        // push all import log records
+        var pushChain = Promise.resolve();
+        importRecords.forEach(function(rec) {
+          pushChain = pushChain.then(function(){ return db.ref('imports').push(rec); });
+        });
+        return pushChain;
       }).then(function() {
         hideLoading();
-        showToast('นำเข้าสต๊อกสำเร็จ', 'success');
-        document.getElementById('importStockForm').reset();
+        showToast('✅ นำเข้าสต๊อกสำเร็จ ' + validRows.length + ' รายการ', 'success');
+        document.getElementById('importSheetBody').innerHTML = '';
+        addSheetRows(5);
         loadImportHistory();
-        logActivity('import_stock', 'นำเข้า ' + colorCode + ' x' + quantity);
+        logActivity('import_stock', 'นำเข้าแบบตาราง ' + validRows.length + ' รายการ');
       }).catch(function(error) {
         hideLoading();
         showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
@@ -4885,9 +5005,8 @@
       document.getElementById('todayTxnBtn').addEventListener('click', loadTodayTransactions);
       document.getElementById('filterLogBtn').addEventListener('click', loadActivityLog);
       document.getElementById('toggleStockStatus').addEventListener('change', toggleStockStatus);
-      document.getElementById('manageSearchBtn').addEventListener('click', handleManageSearch);
-      document.getElementById('importStockForm').addEventListener('submit', handleImportStock);
       document.getElementById('filterImportHistoryBtn').addEventListener('click', loadImportHistory);
+      document.getElementById('exportImportHistoryBtn').addEventListener('click', exportImportHistory);
       document.getElementById('viewGridBtn').addEventListener('click', function() { setProductView('grid'); });
       document.getElementById('viewListBtn').addEventListener('click', function() { setProductView('list'); });
       
