@@ -445,17 +445,35 @@
     @media(max-width:900px){.header-stock-controls .stock-toggle-wrapper{padding:6px 10px}.header-stock-controls .stock-toggle-label{font-size:12px}}
     /* Google-Sheet style import table */
     .sheet-hint{background:#eef6ff;border:1px solid #cfe4ff;color:#0b5cad;font-size:13px;padding:10px 14px;border-radius:var(--radius-sm);margin-bottom:16px;line-height:1.6}
+    /* Sheet tabs (bottom-of-sheet style, but placed on top) */
+    .sheet-tabs-bar{display:flex;align-items:center;gap:8px;border-bottom:2px solid var(--border);margin-bottom:12px;overflow-x:auto;padding-bottom:2px}
+    .sheet-tabs{display:flex;gap:4px;flex:1;min-width:0}
+    .sheet-tab{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;background:var(--bg-secondary);border:1px solid var(--border);border-bottom:none;border-radius:10px 10px 0 0;font-size:14px;font-weight:500;color:var(--text-secondary);cursor:pointer;white-space:nowrap;transition:var(--transition);position:relative;top:2px}
+    .sheet-tab:hover{background:var(--bg-tertiary)}
+    .sheet-tab.active{background:var(--bg-primary);color:var(--accent);font-weight:600;border-color:var(--border);border-bottom:2px solid var(--bg-primary);box-shadow:0 -2px 6px rgba(0,0,0,.04)}
+    .sheet-tab .tab-dirty{width:7px;height:7px;border-radius:50%;background:var(--warning);display:inline-block}
+    .sheet-tab .tab-badge{font-size:11px;background:rgba(0,0,0,.08);padding:1px 7px;border-radius:10px;color:var(--text-tertiary)}
+    .sheet-tab-add{padding:8px 14px;background:transparent;border:1px dashed var(--accent);color:var(--accent);border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;font-family:inherit}
+    .sheet-tab-add:hover{background:#eef6ff}
+    .sheet-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+    .sheet-toolbar-left{display:flex;align-items:center;gap:8px}
+    .sheet-current-label{font-size:13px;color:var(--text-tertiary)}
+    .sheet-current-code{font-size:18px;font-weight:700;color:var(--text-primary)}
+    .sheet-current-count{font-size:13px;color:var(--text-tertiary);background:var(--bg-secondary);padding:2px 10px;border-radius:10px}
+    .sheet-toolbar-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .sheet-empty{text-align:center;padding:40px;color:var(--text-tertiary);font-size:15px}
     .sheet-table-wrapper{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius-sm)}
     .sheet-table{width:100%;border-collapse:collapse;font-size:14px}
     .sheet-table thead th{background:var(--bg-secondary);text-align:left;padding:10px 12px;font-weight:600;color:var(--text-primary);border-bottom:2px solid var(--border);border-right:1px solid var(--border);white-space:nowrap;position:sticky;top:0}
     .sheet-table thead th .req{color:var(--danger)}
     .sheet-table thead th .th-sub{font-size:11px;font-weight:400;color:var(--text-tertiary);margin-top:2px}
     .sheet-table tbody td{padding:0;border-bottom:1px solid var(--border);border-right:1px solid var(--border)}
-    .sheet-table tbody td.row-num{text-align:center;color:var(--text-tertiary);font-size:13px;background:var(--bg-secondary);width:40px}
+    .sheet-table tbody td.row-num{text-align:center;color:var(--text-tertiary);font-size:13px;background:var(--bg-secondary);width:44px}
     .sheet-table tbody td.del-cell{text-align:center}
     .sheet-cell{width:100%;border:none;background:transparent;padding:10px 12px;font-family:inherit;font-size:14px;font-weight:300;color:var(--text-primary);outline:none}
     .sheet-cell:focus{background:#e8f2ff;box-shadow:inset 0 0 0 2px var(--accent)}
     .sheet-cell.invalid{background:#ffe9e7;box-shadow:inset 0 0 0 2px var(--danger)}
+    select.sheet-cell{cursor:pointer;font-weight:400}
     .sheet-del-btn{background:transparent;border:none;color:var(--danger);cursor:pointer;font-size:16px;padding:6px 10px;border-radius:6px}
     .sheet-del-btn:hover{background:#ffe9e7}
     .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}
@@ -874,41 +892,58 @@
       <div id="pageImportStock" class="page">
         <div class="card">
           <div class="card-header">
-            <h2 class="card-title">📥 นำเข้าสต๊อก (กรอกแบบตาราง)</h2>
+            <h2 class="card-title">📥 นำเข้า/แก้ไขสต๊อก (แบบ Google Sheet)<span class="live-indicator"><span class="live-dot"></span>Live</span></h2>
             <div style="display:flex;gap:8px;align-items:center;">
-              <span style="font-size:13px;color:var(--text-tertiary);">โหมดนำเข้า:</span>
-              <select id="importTypeAction" class="form-input" style="width:auto;padding:6px 10px;">
-                <option value="new">รับสินค้าใหม่</option>
-                <option value="return">คืนจากลูกค้า</option>
-                <option value="transfer">โอนจากสาขาอื่น</option>
-                <option value="adjust">ปรับปรุงสต๊อก</option>
-              </select>
+              <button class="btn btn-secondary btn-sm" onclick="reloadImportFromDB()">🔄 โหลดจาก Database ใหม่</button>
+              <button class="btn btn-primary btn-sm" onclick="saveAllImportTabs()">💾 บันทึกทั้งหมด</button>
             </div>
           </div>
-          <div style="padding:0 24px 24px;">
+          <div style="padding:0 20px 20px;">
             <div class="sheet-hint">
-              💡 กรอกข้อมูลเหมือน Google Sheet ได้เลย — พิมพ์ <b>Tab</b> เพื่อข้ามช่อง, กด <b>Enter</b> ที่ช่องสุดท้ายเพื่อเพิ่มแถวใหม่, วางข้อมูลจาก Excel/Sheet ได้ (Ctrl+V)
+              💡 กรอกเหมือน Google Sheet — แต่ละ<b>แท็บด้านล่าง = รหัสสี 1 รหัส</b> สลับไปมาได้โดยข้อมูลไม่หาย · กด <b>Enter</b> ที่ช่องสุดท้ายเพื่อขึ้นแถวใหม่ · วางจาก Excel ได้ (Ctrl+V) · กด <b>💾 บันทึกทั้งหมด</b> ทีเดียวทุกแท็บขึ้น Database เลย
             </div>
+
+            <!-- แท็บรหัสสี (เหมือน sheet tabs) -->
+            <div class="sheet-tabs-bar">
+              <div id="sheetTabs" class="sheet-tabs"></div>
+              <button class="sheet-tab-add" onclick="promptAddImportTab()" title="เพิ่มรหัสสีใหม่">+ เพิ่มรหัสสี</button>
+            </div>
+
+            <!-- แถบเครื่องมือของแท็บที่เลือก -->
+            <div class="sheet-toolbar">
+              <div class="sheet-toolbar-left">
+                <span class="sheet-current-label">รหัสสี:</span>
+                <span id="currentTabName" class="sheet-current-code">-</span>
+                <span id="currentTabCount" class="sheet-current-count"></span>
+              </div>
+              <div class="sheet-toolbar-right">
+                <button class="btn btn-secondary btn-sm" onclick="sortCurrentTab()">↕️ เรียงตามขนาด</button>
+                <button class="btn btn-secondary btn-sm" onclick="addImportRow()">+ เพิ่มแถว</button>
+                <button class="btn btn-secondary btn-sm" onclick="addImportRows(10)">+ 10 แถว</button>
+                <button class="btn btn-warning btn-sm" onclick="renameCurrentTab()">✏️ เปลี่ยนรหัส</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteCurrentTab()">🗑️ ลบแท็บ</button>
+              </div>
+            </div>
+
+            <!-- ตารางกรอกข้อมูล -->
             <div class="sheet-table-wrapper">
               <table class="sheet-table" id="importSheetTable">
                 <thead>
                   <tr>
-                    <th style="width:40px;">#</th>
-                    <th>รหัสผ้าม่าน <span class="req">*</span><div class="th-sub">เช่น 734, 828-1, A4, 2021-5, Z05</div></th>
-                    <th style="width:130px;">กว้าง (ซม.) <span class="req">*</span></th>
-                    <th style="width:130px;">สูง (ซม.) <span class="req">*</span></th>
-                    <th style="width:130px;">จำนวน (ม้วน) <span class="req">*</span></th>
-                    <th style="width:60px;">ลบ</th>
+                    <th style="width:44px;">#</th>
+                    <th style="width:110px;">กว้าง (ม.) <span class="req">*</span></th>
+                    <th style="width:110px;">สูง (ม.) <span class="req">*</span></th>
+                    <th style="width:100px;">จำนวน (ผืน) <span class="req">*</span></th>
+                    <th style="width:170px;">ประเภทผ้าม่าน</th>
+                    <th style="width:150px;">การต่อผ้า</th>
+                    <th style="width:50px;">ลบ</th>
                   </tr>
                 </thead>
                 <tbody id="importSheetBody"></tbody>
               </table>
             </div>
-            <div style="display:flex;gap:12px;margin-top:16px;flex-wrap:wrap;">
-              <button type="button" class="btn btn-secondary" onclick="addSheetRow()">+ เพิ่มแถว</button>
-              <button type="button" class="btn btn-secondary" onclick="addSheetRows(10)">+ เพิ่ม 10 แถว</button>
-              <button type="button" class="btn btn-warning btn-sm" onclick="clearSheetRows()">🗑️ ล้างตาราง</button>
-              <button type="button" class="btn btn-primary" style="margin-left:auto;" onclick="submitImportSheet()">📥 บันทึกนำเข้าทั้งหมด</button>
+            <div id="importEmptyState" class="sheet-empty" style="display:none;">
+              ยังไม่มีรหัสสี — กด <b>+ เพิ่มรหัสสี</b> เพื่อเริ่มกรอก
             </div>
           </div>
         </div>
@@ -926,7 +961,7 @@
           </div>
           <div class="table-container">
             <table>
-              <thead><tr><th>วันที่/เวลา</th><th>รหัสผ้าม่าน</th><th>ขนาด</th><th>จำนวน</th><th>ประเภท</th><th>ผู้นำเข้า</th></tr></thead>
+              <thead><tr><th>วันที่/เวลา</th><th>รหัสสี</th><th>ขนาด</th><th>จำนวน</th><th>ประเภท</th><th>ผู้นำเข้า</th></tr></thead>
               <tbody id="importHistoryTable"></tbody>
             </table>
           </div>
@@ -2115,6 +2150,7 @@
             width: item.width,
             height: item.height,
             type: item.type || '',
+            seam: item.seam || '',
             quantity: item.quantity
           });
         }
@@ -2176,7 +2212,7 @@
         
         html += '<div class="product-card-body">';
         html += '<div class="product-code">' + item.colorCode + '</div>';
-        html += '<div class="product-size">' + formatSize(item.width) + ' × ' + formatSize(item.height) + ' ม.</div>';
+        html += '<div class="product-size">' + formatSize(item.width) + ' × ' + formatSize(item.height) + ' ม.' + (item.seam && item.seam !== 'ไม่ต่อ' ? ' · ' + item.seam : '') + '</div>';
         html += '<div class="product-stock"><span class="stock-count ' + stockClass + '">คงเหลือ: ' + item.quantity + ' ผืน</span>';
         html += '<div class="quantity-control"><button class="qty-btn" onclick="adjustQty(this,-1)" ' + disabledAttr + '>−</button>';
         html += '<input type="number" class="qty-input" value="1" min="1" max="' + item.quantity + '" ' + disabledAttr + '>';
@@ -4330,243 +4366,450 @@
     }
 
     // ============================================
-    // IMPORT STOCK - Google Sheet style grid
+    // IMPORT STOCK - Google Sheet style (multi-tab)
     // ============================================
-    var sheetRowSeq = 0;
+    // โครงสร้าง: importTabs = { 'A6': { rows: [{width,height,qty,type,seam}], dirty:false, isNew:false }, ... }
+    var importTabs = {};
+    var currentImportTab = null;
+    var importLoaded = false;
 
-    function createSheetRow(data) {
-      data = data || {};
-      sheetRowSeq++;
-      var tr = document.createElement('tr');
-      tr.innerHTML =
-        '<td class="row-num"></td>' +
-        '<td><input class="sheet-cell col-code" type="text" placeholder="เช่น 734" value="' + (data.code || '') + '"></td>' +
-        '<td><input class="sheet-cell col-width" type="number" step="0.1" min="0" placeholder="150" value="' + (data.width || '') + '"></td>' +
-        '<td><input class="sheet-cell col-height" type="number" step="0.1" min="0" placeholder="160" value="' + (data.height || '') + '"></td>' +
-        '<td><input class="sheet-cell col-qty" type="number" min="0" placeholder="10" value="' + (data.qty || '') + '"></td>' +
-        '<td class="del-cell"><button type="button" class="sheet-del-btn" onclick="deleteSheetRow(this)">✕</button></td>';
-      return tr;
-    }
+    var CURTAIN_TYPES = ['ผ้าม่านตาไก่', 'ผ้าม่านตะขอ', 'ผ้าม่านตีนตุ๊กแก', 'ม่านสอด', 'ม่านพับ', 'ม่านจีบ', 'ม่านม้วน'];
+    var SEAM_TYPES = ['ไม่ต่อ', 'ต่อล่าง', 'ต่อข้าง', 'ต่อล่าง+ข้าง'];
 
-    function addSheetRow(data) {
-      var body = document.getElementById('importSheetBody');
-      var tr = createSheetRow(data);
-      body.appendChild(tr);
-      renumberSheetRows();
-      attachSheetCellEvents(tr);
-      return tr;
-    }
-
-    function addSheetRows(n) {
-      for (var i = 0; i < n; i++) addSheetRow();
-    }
-
-    function deleteSheetRow(btn) {
-      var body = document.getElementById('importSheetBody');
-      btn.closest('tr').remove();
-      if (body.children.length === 0) addSheetRow();
-      renumberSheetRows();
-    }
-
-    function clearSheetRows() {
-      document.getElementById('importSheetBody').innerHTML = '';
-      addSheetRows(5);
-    }
-
-    function renumberSheetRows() {
-      var rows = document.getElementById('importSheetBody').children;
-      for (var i = 0; i < rows.length; i++) {
-        rows[i].querySelector('.row-num').textContent = (i + 1);
+    // เข้าหน้านำเข้า: โหลดครั้งแรกจาก DB
+    function initImportSheet() {
+      if (!importLoaded) {
+        reloadImportFromDB();
+      } else {
+        renderImportTabs();
+        renderImportGrid();
       }
     }
 
-    function attachSheetCellEvents(tr) {
-      var cells = tr.querySelectorAll('.sheet-cell');
-      cells.forEach(function(cell) {
-        // Enter on last cell => add new row
+    function reloadImportFromDB() {
+      showLoading();
+      db.ref('stock').once('value').then(function(snapshot) {
+        var data = snapshot.val() || {};
+        importTabs = {};
+        Object.keys(data).forEach(function(code) {
+          var stockData = data[code] || {};
+          var items = stockData.items || [];
+          var rows = items.map(function(it) {
+            return {
+              width: (it.width !== undefined && it.width !== null) ? String(it.width) : '',
+              height: (it.height !== undefined && it.height !== null) ? String(it.height) : '',
+              qty: (it.quantity !== undefined && it.quantity !== null) ? String(it.quantity) : '',
+              type: it.type || '',
+              seam: it.seam || ''
+            };
+          });
+          importTabs[code] = { rows: rows, dirty: false, isNew: false };
+        });
+        importLoaded = true;
+        // เลือกแท็บแรก
+        var codes = Object.keys(importTabs).sort(sortCodeAsc);
+        currentImportTab = codes.length ? codes[0] : null;
+        hideLoading();
+        renderImportTabs();
+        renderImportGrid();
+        showToast('โหลดข้อมูลจาก Database แล้ว (' + codes.length + ' รหัสสี)', 'success');
+      }).catch(function(err) {
+        hideLoading();
+        showToast('โหลดข้อมูลไม่สำเร็จ: ' + err.message, 'error');
+      });
+    }
+
+    function sortCodeAsc(a, b) {
+      return a.localeCompare(b, 'th', { numeric: true });
+    }
+
+    // ---------- Tabs ----------
+    function renderImportTabs() {
+      var container = document.getElementById('sheetTabs');
+      var codes = Object.keys(importTabs);
+      if (codes.length === 0) {
+        container.innerHTML = '';
+        document.getElementById('importEmptyState').style.display = 'block';
+        document.querySelector('#pageImportStock .sheet-table-wrapper').style.display = 'none';
+        document.getElementById('currentTabName').textContent = '-';
+        document.getElementById('currentTabCount').textContent = '';
+        return;
+      }
+      document.getElementById('importEmptyState').style.display = 'none';
+      document.querySelector('#pageImportStock .sheet-table-wrapper').style.display = 'block';
+
+      var html = '';
+      codes.forEach(function(code) {
+        var tab = importTabs[code];
+        var active = (code === currentImportTab) ? ' active' : '';
+        var dirty = tab.dirty ? '<span class="tab-dirty" title="ยังไม่บันทึก"></span>' : '';
+        var count = tab.rows.length;
+        html += '<div class="sheet-tab' + active + '" onclick="switchImportTab(\'' + encodeURIComponent(code) + '\')">' +
+                dirty + '<span>' + escapeHtml(code) + '</span>' +
+                '<span class="tab-badge">' + count + '</span></div>';
+      });
+      container.innerHTML = html;
+    }
+
+    function switchImportTab(codeEnc) {
+      var code = decodeURIComponent(codeEnc);
+      // เก็บข้อมูลแท็บปัจจุบันก่อนสลับ
+      captureCurrentGrid();
+      currentImportTab = code;
+      renderImportTabs();
+      renderImportGrid();
+    }
+
+    function promptAddImportTab() {
+      var code = prompt('กรอกรหัสสีใหม่ (เช่น A6, 734, 828-1):');
+      if (code === null) return;
+      code = code.trim().toUpperCase();
+      if (!code) { showToast('กรุณากรอกรหัสสี', 'warning'); return; }
+      if (importTabs[code]) {
+        showToast('มีรหัส ' + code + ' อยู่แล้ว สลับไปแท็บนั้นแทน', 'warning');
+        captureCurrentGrid();
+        currentImportTab = code;
+        renderImportTabs(); renderImportGrid();
+        return;
+      }
+      captureCurrentGrid();
+      importTabs[code] = { rows: [ blankRow() ], dirty: true, isNew: true };
+      currentImportTab = code;
+      renderImportTabs();
+      renderImportGrid();
+    }
+
+    function renameCurrentTab() {
+      if (!currentImportTab) return;
+      var oldCode = currentImportTab;
+      var code = prompt('เปลี่ยนรหัสสี "' + oldCode + '" เป็น:', oldCode);
+      if (code === null) return;
+      code = code.trim().toUpperCase();
+      if (!code || code === oldCode) return;
+      if (importTabs[code]) { showToast('มีรหัส ' + code + ' อยู่แล้ว', 'error'); return; }
+      captureCurrentGrid();
+      importTabs[code] = importTabs[oldCode];
+      importTabs[code].dirty = true;
+      delete importTabs[oldCode];
+      // เก็บ oldCode ไว้เพื่อลบออกจาก DB ตอนบันทึก
+      importTabs[code].renamedFrom = oldCode;
+      currentImportTab = code;
+      renderImportTabs();
+      renderImportGrid();
+    }
+
+    function deleteCurrentTab() {
+      if (!currentImportTab) return;
+      var code = currentImportTab;
+      if (!confirm('ลบแท็บรหัสสี "' + code + '" ?\n\n(หากรหัสนี้มีอยู่ใน Database จะถูกลบออกเมื่อกดบันทึกทั้งหมด)')) return;
+      // ทำเครื่องหมายให้ลบจาก DB ตอนบันทึก
+      pendingDeleteCodes[code] = true;
+      delete importTabs[code];
+      var codes = Object.keys(importTabs).sort(sortCodeAsc);
+      currentImportTab = codes.length ? codes[0] : null;
+      renderImportTabs();
+      renderImportGrid();
+    }
+
+    var pendingDeleteCodes = {};
+
+    // ---------- Grid ----------
+    function blankRow() {
+      return { width: '', height: '', qty: '', type: '', seam: '' };
+    }
+
+    function renderImportGrid() {
+      var body = document.getElementById('importSheetBody');
+      if (!currentImportTab || !importTabs[currentImportTab]) {
+        body.innerHTML = '';
+        document.getElementById('currentTabName').textContent = '-';
+        document.getElementById('currentTabCount').textContent = '';
+        return;
+      }
+      var tab = importTabs[currentImportTab];
+      document.getElementById('currentTabName').textContent = currentImportTab;
+      document.getElementById('currentTabCount').textContent = tab.rows.length + ' รายการ';
+
+      if (tab.rows.length === 0) tab.rows.push(blankRow());
+
+      var html = '';
+      for (var i = 0; i < tab.rows.length; i++) {
+        html += buildRowHtml(tab.rows[i], i);
+      }
+      body.innerHTML = html;
+      attachGridEvents();
+    }
+
+    function buildRowHtml(row, i) {
+      var typeOpts = '<option value="">— เลือก —</option>';
+      CURTAIN_TYPES.forEach(function(t) {
+        typeOpts += '<option value="' + t + '"' + (row.type === t ? ' selected' : '') + '>' + t + '</option>';
+      });
+      var seamOpts = '';
+      SEAM_TYPES.forEach(function(s) {
+        seamOpts += '<option value="' + s + '"' + (row.seam === s ? ' selected' : '') + '>' + s + '</option>';
+      });
+      return '<tr data-idx="' + i + '">' +
+        '<td class="row-num">' + (i + 1) + '</td>' +
+        '<td><input class="sheet-cell col-width" type="number" step="0.01" min="0" placeholder="1.20" value="' + attr(row.width) + '"></td>' +
+        '<td><input class="sheet-cell col-height" type="number" step="0.01" min="0" placeholder="1.60" value="' + attr(row.height) + '"></td>' +
+        '<td><input class="sheet-cell col-qty" type="number" min="0" placeholder="1" value="' + attr(row.qty) + '"></td>' +
+        '<td><select class="sheet-cell col-type">' + typeOpts + '</select></td>' +
+        '<td><select class="sheet-cell col-seam">' + seamOpts + '</select></td>' +
+        '<td class="del-cell"><button type="button" class="sheet-del-btn" onclick="deleteImportRow(' + i + ')">✕</button></td>' +
+        '</tr>';
+    }
+
+    function attr(v) { return (v === undefined || v === null) ? '' : String(v).replace(/"/g, '&quot;'); }
+    function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+    // อ่านค่าจาก DOM กลับเข้า importTabs[currentImportTab].rows
+    function captureCurrentGrid() {
+      if (!currentImportTab || !importTabs[currentImportTab]) return;
+      var body = document.getElementById('importSheetBody');
+      if (!body) return;
+      var trs = body.querySelectorAll('tr');
+      var rows = [];
+      trs.forEach(function(tr) {
+        rows.push({
+          width: tr.querySelector('.col-width').value.trim(),
+          height: tr.querySelector('.col-height').value.trim(),
+          qty: tr.querySelector('.col-qty').value.trim(),
+          type: tr.querySelector('.col-type').value,
+          seam: tr.querySelector('.col-seam').value
+        });
+      });
+      importTabs[currentImportTab].rows = rows;
+    }
+
+    function markDirty() {
+      if (currentImportTab && importTabs[currentImportTab]) {
+        importTabs[currentImportTab].dirty = true;
+      }
+    }
+
+    function attachGridEvents() {
+      var body = document.getElementById('importSheetBody');
+      var inputs = body.querySelectorAll('.sheet-cell');
+      inputs.forEach(function(cell) {
+        cell.addEventListener('input', markDirty);
+        cell.addEventListener('change', function() {
+          markDirty();
+          renderImportTabs(); // อัพเดท dirty dot + count
+        });
+        // Enter ที่ช่องต่อผ้า (ช่องสุดท้าย) = เพิ่มแถวใหม่
         cell.addEventListener('keydown', function(e) {
           if (e.key === 'Enter') {
             e.preventDefault();
-            if (cell.classList.contains('col-qty')) {
-              var body = document.getElementById('importSheetBody');
-              var isLast = tr === body.lastElementChild;
-              if (isLast) {
-                var newRow = addSheetRow();
-                newRow.querySelector('.col-code').focus();
-              } else {
-                var next = tr.nextElementSibling;
-                if (next) next.querySelector('.col-code').focus();
+            if (cell.classList.contains('col-seam') || cell.classList.contains('col-qty')) {
+              var tr = cell.closest('tr');
+              var idx = parseInt(tr.getAttribute('data-idx'));
+              captureCurrentGrid();
+              if (idx === importTabs[currentImportTab].rows.length - 1) {
+                importTabs[currentImportTab].rows.push(blankRow());
+                markDirty();
+                renderImportGrid();
+                var newBody = document.getElementById('importSheetBody');
+                var last = newBody.querySelector('tr:last-child .col-width');
+                if (last) last.focus();
               }
             }
           }
         });
-        // Paste from Excel/Sheet (tab/newline separated)
+        // วางจาก Excel/Sheet
         cell.addEventListener('paste', function(e) {
           var text = (e.clipboardData || window.clipboardData).getData('text');
           if (text && (text.indexOf('\t') !== -1 || text.trim().indexOf('\n') !== -1)) {
             e.preventDefault();
-            handleSheetPaste(text, cell, tr);
+            handleGridPaste(text, cell);
           }
         });
       });
     }
 
-    function handleSheetPaste(text, startCell, startTr) {
-      var rows = text.replace(/\r/g, '').split('\n').filter(function(r){ return r.trim() !== ''; });
-      var colOrder = ['col-code', 'col-width', 'col-height', 'col-qty'];
-      var startColClass = colOrder.find(function(c){ return startCell.classList.contains(c); }) || 'col-code';
-      var startColIdx = colOrder.indexOf(startColClass);
-      var body = document.getElementById('importSheetBody');
-      var allRows = Array.prototype.slice.call(body.children);
-      var startRowIdx = allRows.indexOf(startTr);
+    function handleGridPaste(text, startCell) {
+      captureCurrentGrid();
+      var pasteRows = text.replace(/\r/g, '').split('\n').filter(function(r){ return r.trim() !== ''; });
+      var colOrder = ['width', 'height', 'qty', 'type', 'seam'];
+      var startCol = 'width';
+      ['col-width','col-height','col-qty','col-type','col-seam'].forEach(function(c){
+        if (startCell.classList.contains(c)) startCol = c.replace('col-','');
+      });
+      var startColIdx = colOrder.indexOf(startCol);
+      var tr = startCell.closest('tr');
+      var startRowIdx = parseInt(tr.getAttribute('data-idx'));
+      var rows = importTabs[currentImportTab].rows;
 
-      for (var r = 0; r < rows.length; r++) {
-        var cols = rows[r].split('\t');
-        var targetRowIdx = startRowIdx + r;
-        var targetTr = body.children[targetRowIdx];
-        if (!targetTr) targetTr = addSheetRow();
+      for (var r = 0; r < pasteRows.length; r++) {
+        var cols = pasteRows[r].split('\t');
+        var targetIdx = startRowIdx + r;
+        while (rows.length <= targetIdx) rows.push(blankRow());
         for (var c = 0; c < cols.length; c++) {
           var colIdx = startColIdx + c;
           if (colIdx >= colOrder.length) break;
-          var input = targetTr.querySelector('.' + colOrder[colIdx]);
-          if (input) input.value = cols[c].trim();
+          rows[targetIdx][colOrder[colIdx]] = cols[c].trim();
         }
       }
-      renumberSheetRows();
-      showToast('วางข้อมูล ' + rows.length + ' แถวแล้ว', 'success');
+      markDirty();
+      renderImportGrid();
+      renderImportTabs();
+      showToast('วางข้อมูล ' + pasteRows.length + ' แถวแล้ว', 'success');
     }
 
-    function initImportSheet() {
-      var body = document.getElementById('importSheetBody');
-      if (body && body.children.length === 0) {
-        addSheetRows(5);
-      }
+    function addImportRow() {
+      if (!currentImportTab) { showToast('กรุณาเพิ่มรหัสสีก่อน', 'warning'); return; }
+      captureCurrentGrid();
+      importTabs[currentImportTab].rows.push(blankRow());
+      markDirty();
+      renderImportGrid();
+      renderImportTabs();
     }
 
-    function submitImportSheet() {
-      var rows = document.getElementById('importSheetBody').children;
-      var importType = document.getElementById('importTypeAction').value;
-      var validRows = [];
-      var hasError = false;
+    function addImportRows(n) {
+      if (!currentImportTab) { showToast('กรุณาเพิ่มรหัสสีก่อน', 'warning'); return; }
+      captureCurrentGrid();
+      for (var i = 0; i < n; i++) importTabs[currentImportTab].rows.push(blankRow());
+      markDirty();
+      renderImportGrid();
+      renderImportTabs();
+    }
 
-      // reset invalid marks
-      document.querySelectorAll('.sheet-cell.invalid').forEach(function(c){ c.classList.remove('invalid'); });
+    function deleteImportRow(idx) {
+      captureCurrentGrid();
+      var rows = importTabs[currentImportTab].rows;
+      rows.splice(idx, 1);
+      if (rows.length === 0) rows.push(blankRow());
+      markDirty();
+      renderImportGrid();
+      renderImportTabs();
+    }
 
-      for (var i = 0; i < rows.length; i++) {
-        var tr = rows[i];
-        var codeEl = tr.querySelector('.col-code');
-        var widthEl = tr.querySelector('.col-width');
-        var heightEl = tr.querySelector('.col-height');
-        var qtyEl = tr.querySelector('.col-qty');
+    // เรียงตามกว้างน้อย→มาก แล้วสูงน้อย→มาก
+    function sortCurrentTab() {
+      if (!currentImportTab) return;
+      captureCurrentGrid();
+      var rows = importTabs[currentImportTab].rows;
+      // เก็บเฉพาะแถวที่มีขนาด (ไม่เอาแถวว่างล้วน)
+      var filled = rows.filter(function(r){ return r.width !== '' || r.height !== '' || r.qty !== '' || r.type !== '' || r.seam !== ''; });
+      filled.sort(function(a, b) {
+        var aw = parseFloat(a.width) || 0, bw = parseFloat(b.width) || 0;
+        if (aw !== bw) return aw - bw;
+        var ah = parseFloat(a.height) || 0, bh = parseFloat(b.height) || 0;
+        return ah - bh;
+      });
+      if (filled.length === 0) filled.push(blankRow());
+      importTabs[currentImportTab].rows = filled;
+      markDirty();
+      renderImportGrid();
+      renderImportTabs();
+      showToast('เรียงลำดับตามขนาดแล้ว', 'success');
+    }
 
-        var code = codeEl.value.trim();
-        var width = widthEl.value.trim();
-        var height = heightEl.value.trim();
-        var qty = qtyEl.value.trim();
+    // ---------- บันทึกทั้งหมด ----------
+    function saveAllImportTabs() {
+      captureCurrentGrid();
 
-        // skip fully empty rows
-        if (!code && !width && !height && !qty) continue;
+      // ตรวจสอบความถูกต้องทุกแท็บ
+      var errors = [];
+      var payload = {}; // code -> items[]
+      Object.keys(importTabs).forEach(function(code) {
+        var tab = importTabs[code];
+        var items = [];
+        for (var i = 0; i < tab.rows.length; i++) {
+          var r = tab.rows[i];
+          var empty = (r.width === '' && r.height === '' && r.qty === '' && r.type === '' && r.seam === '');
+          if (empty) continue;
+          if (r.width === '' || parseFloat(r.width) <= 0 ||
+              r.height === '' || parseFloat(r.height) <= 0 ||
+              r.qty === '' || parseInt(r.qty) < 0) {
+            errors.push(code + ' แถวที่ ' + (i + 1));
+            continue;
+          }
+          items.push({
+            row: items.length + 2,
+            colorCode: code,
+            width: parseFloat(r.width),
+            height: parseFloat(r.height),
+            quantity: parseInt(r.qty),
+            type: r.type || '',
+            seam: r.seam || ''
+          });
+        }
+        payload[code] = items;
+      });
 
-        var rowError = false;
-        if (!code) { codeEl.classList.add('invalid'); rowError = true; }
-        if (!width || parseFloat(width) <= 0) { widthEl.classList.add('invalid'); rowError = true; }
-        if (!height || parseFloat(height) <= 0) { heightEl.classList.add('invalid'); rowError = true; }
-        if (!qty || parseInt(qty) <= 0) { qtyEl.classList.add('invalid'); rowError = true; }
-
-        if (rowError) { hasError = true; continue; }
-
-        validRows.push({
-          code: code.toUpperCase(),
-          width: parseFloat(width),
-          height: parseFloat(height),
-          qty: parseInt(qty)
-        });
-      }
-
-      if (hasError) {
-        showToast('มีบางแถวกรอกไม่ครบ (ช่องสีแดง) กรุณาแก้ไข', 'warning');
+      if (errors.length > 0) {
+        showToast('มีข้อมูลไม่ครบ: ' + errors.slice(0, 3).join(', ') + (errors.length > 3 ? ' ...' : ''), 'error');
         return;
       }
-      if (validRows.length === 0) {
-        showToast('กรุณากรอกข้อมูลอย่างน้อย 1 แถว', 'warning');
+
+      var dirtyCodes = Object.keys(importTabs).filter(function(c){ return importTabs[c].dirty; });
+      var deleteCodes = Object.keys(pendingDeleteCodes);
+      if (dirtyCodes.length === 0 && deleteCodes.length === 0) {
+        showToast('ไม่มีการเปลี่ยนแปลงที่ต้องบันทึก', 'info');
         return;
       }
 
       showLoading();
+      var updates = {};
+      var importLogRecords = [];
+      var savedCount = 0;
 
-      // Group rows by รหัสผ้าม่าน (sheetName)
-      var byCode = {};
-      validRows.forEach(function(r) {
-        if (!byCode[r.code]) byCode[r.code] = [];
-        byCode[r.code].push(r);
-      });
-
-      var codes = Object.keys(byCode);
-      var chain = Promise.resolve();
-      var importRecords = [];
-
-      codes.forEach(function(code) {
-        chain = chain.then(function() {
-          var stockRef = db.ref('stock/' + code);
-          return stockRef.once('value').then(function(snapshot) {
-            var stockData = snapshot.val() || { sheetName: code, items: [] };
-            var items = stockData.items || [];
-
-            byCode[code].forEach(function(r) {
-              // merge with existing same width/height
-              var idx = -1;
-              for (var j = 0; j < items.length; j++) {
-                if (Math.abs(parseFloat(items[j].width) - r.width) < 0.01 &&
-                    Math.abs(parseFloat(items[j].height) - r.height) < 0.01) {
-                  idx = j; break;
-                }
-              }
-              if (idx >= 0) {
-                items[idx].quantity = (items[idx].quantity || 0) + r.qty;
-              } else {
-                items.push({
-                  row: items.length + 2,
-                  colorCode: code,
-                  width: r.width,
-                  height: r.height,
-                  type: '',
-                  quantity: r.qty
-                });
-              }
-              importRecords.push({
-                timestamp: new Date().toISOString(),
-                colorCode: code,
-                width: r.width,
-                height: r.height,
-                type: '',
-                quantity: r.qty,
-                importType: importType,
-                notes: '',
-                importedBy: currentUser.username
-              });
+      dirtyCodes.forEach(function(code) {
+        var items = payload[code];
+        var tab = importTabs[code];
+        // ถ้ามีการเปลี่ยนชื่อรหัส ให้ลบรหัสเดิม
+        if (tab.renamedFrom && tab.renamedFrom !== code) {
+          updates['stock/' + tab.renamedFrom] = null;
+        }
+        updates['stock/' + code] = {
+          sheetName: code,
+          items: items,
+          lastUpdated: new Date().toISOString()
+        };
+        savedCount += items.length;
+        // เก็บ log เฉพาะแท็บใหม่ (นำเข้าใหม่)
+        if (tab.isNew) {
+          items.forEach(function(it) {
+            importLogRecords.push({
+              timestamp: new Date().toISOString(),
+              colorCode: code,
+              width: it.width, height: it.height,
+              quantity: it.quantity, type: it.type,
+              seam: it.seam, importType: 'new',
+              importedBy: currentUser.username
             });
-
-            stockData.items = items;
-            stockData.lastUpdated = new Date().toISOString();
-            return stockRef.set(stockData);
           });
-        });
+        }
       });
 
-      chain.then(function() {
-        // push all import log records
-        var pushChain = Promise.resolve();
-        importRecords.forEach(function(rec) {
-          pushChain = pushChain.then(function(){ return db.ref('imports').push(rec); });
+      // ลบแท็บที่สั่งลบ
+      deleteCodes.forEach(function(code) {
+        updates['stock/' + code] = null;
+      });
+
+      db.ref().update(updates).then(function() {
+        // push import logs
+        var chain = Promise.resolve();
+        importLogRecords.forEach(function(rec) {
+          chain = chain.then(function(){ return db.ref('imports').push(rec); });
         });
-        return pushChain;
+        return chain;
       }).then(function() {
+        // reset สถานะ
+        dirtyCodes.forEach(function(code) {
+          if (importTabs[code]) {
+            importTabs[code].dirty = false;
+            importTabs[code].isNew = false;
+            delete importTabs[code].renamedFrom;
+          }
+        });
+        pendingDeleteCodes = {};
         hideLoading();
-        showToast('✅ นำเข้าสต๊อกสำเร็จ ' + validRows.length + ' รายการ', 'success');
-        document.getElementById('importSheetBody').innerHTML = '';
-        addSheetRows(5);
+        showToast('✅ บันทึกสำเร็จ ' + dirtyCodes.length + ' รหัสสี (' + savedCount + ' รายการ)', 'success');
+        renderImportTabs();
         loadImportHistory();
-        logActivity('import_stock', 'นำเข้าแบบตาราง ' + validRows.length + ' รายการ');
+        logActivity('import_stock', 'บันทึกสต๊อก ' + dirtyCodes.length + ' รหัสสี');
       }).catch(function(error) {
         hideLoading();
         showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
