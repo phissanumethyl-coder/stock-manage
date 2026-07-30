@@ -31,19 +31,18 @@
     @keyframes spin{to{transform:rotate(360deg)}}
     /* Fresh Blue Sky Theme ☀️💙 */
     .login-container{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#4fc3f7 0%,#29b6f6 20%,#03a9f4 40%,#0288d1 60%,#0277bd 80%,#01579b 100%);padding:20px;position:relative;overflow:hidden}
-    /* Spider-Man theme */
-    .login-container.spiderman{background:linear-gradient(135deg,#b71c1c 0%,#c62828 30%,#1a237e 75%,#0d1440 100%)}
-    .login-container.spiderman::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 20% 20%,rgba(255,255,255,0.06) 0%,transparent 40%),radial-gradient(circle at 80% 80%,rgba(255,255,255,0.05) 0%,transparent 40%);pointer-events:none}
-    .web-bg{position:absolute;width:340px;height:340px;pointer-events:none;opacity:.9}
-    .web-left{top:0;left:0}
-    .web-right{top:0;right:0}
-    .spider-thread{position:absolute;top:0;left:50%;width:2px;height:120px;background:linear-gradient(180deg,rgba(255,255,255,0.5),rgba(255,255,255,0.1));transform:translateX(-50%);animation:spiderDrop 4s ease-in-out infinite}
-    .spider-body{position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);font-size:26px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.4))}
-    @keyframes spiderDrop{0%,100%{height:100px}50%{height:170px}}
-    .spidey-emblem{width:76px;height:76px;margin:0 auto 16px;border-radius:50%;background:radial-gradient(circle,#e53935,#b71c1c);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 30px rgba(229,57,53,0.6),inset 0 2px 8px rgba(255,255,255,0.2);border:3px solid rgba(255,255,255,0.25)}
-    .spidey-title{font-size:24px;font-weight:700;background:linear-gradient(135deg,#e53935,#1a237e);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:12px;line-height:1.3}
-    .btn-spidey{background:linear-gradient(135deg,#e53935 0%,#b71c1c 45%,#1a237e 100%)!important;border:none;font-weight:700;letter-spacing:0.5px;box-shadow:0 4px 20px rgba(229,57,53,0.45);color:#fff}
-    .btn-spidey:hover{transform:translateY(-2px);box-shadow:0 6px 28px rgba(229,57,53,0.6)}
+    /* Minimal light theme */
+    .login-container.minimal{background:linear-gradient(135deg,#f8fafc 0%,#eef2f7 45%,#e8eef6 100%)}
+    .login-container.minimal .blob{position:absolute;border-radius:50%;filter:blur(60px);opacity:.5;pointer-events:none}
+    .login-container.minimal .blob1{width:340px;height:340px;background:#c9e4ff;top:-80px;left:-60px;animation:blobFloat 14s ease-in-out infinite}
+    .login-container.minimal .blob2{width:300px;height:300px;background:#dcd3ff;bottom:-70px;right:-50px;animation:blobFloat 18s ease-in-out infinite reverse}
+    .login-container.minimal .blob3{width:220px;height:220px;background:#d5f5e3;top:40%;right:20%;animation:blobFloat 16s ease-in-out infinite}
+    @keyframes blobFloat{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(30px,-20px) scale(1.08)}66%{transform:translate(-20px,25px) scale(.95)}}
+    .mini-emblem{width:64px;height:64px;margin:0 auto 18px;border-radius:18px;background:#fff;color:var(--accent);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(0,113,227,0.15),0 0 0 1px rgba(0,0,0,0.04);animation:emblemIn .6s cubic-bezier(.2,.8,.2,1)}
+    @keyframes emblemIn{from{opacity:0;transform:translateY(-8px) scale(.9)}to{opacity:1;transform:translateY(0) scale(1)}}
+    .mini-title{font-size:23px;font-weight:600;color:#1d1d1f;margin-bottom:12px;line-height:1.35}
+    .btn-mini{background:var(--accent)!important;border:none;font-weight:600;letter-spacing:.3px;box-shadow:0 4px 16px rgba(0,113,227,0.25);color:#fff;transition:var(--transition)}
+    .btn-mini:hover{transform:translateY(-1px);box-shadow:0 6px 22px rgba(0,113,227,0.35)}
     .login-container::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,0.05);pointer-events:none}
     
     /* Sun */
@@ -89,7 +88,8 @@
     .wave.w2{animation-delay:-4s;opacity:0.4;bottom:10px}
     @keyframes waveMove{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
     
-    .login-card{background:rgba(255,255,255,0.98);border-radius:var(--radius-xl);padding:48px;width:100%;max-width:420px;box-shadow:0 25px 80px rgba(0,0,0,0.15),0 0 0 1px rgba(255,255,255,0.5);position:relative;z-index:10}
+    .login-card{background:#fff;border-radius:24px;padding:48px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(60,80,120,0.10),0 2px 8px rgba(60,80,120,0.05),0 0 0 1px rgba(0,0,0,0.03);position:relative;z-index:10;animation:cardIn .5s cubic-bezier(.2,.8,.2,1)}
+    @keyframes cardIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
     .login-logo{text-align:center;margin-bottom:40px}
     .login-logo h1{font-size:28px;font-weight:600;color:var(--text-primary);margin-bottom:8px}
     .login-logo p{color:var(--text-secondary);font-size:15px;margin-top:16px}
@@ -724,53 +724,22 @@
   <div id="loadingOverlay" class="loading-overlay"><div class="spinner"></div></div>
   <div id="toastContainer" class="toast-container"></div>
 
-  <div id="loginPage" class="login-container spiderman">
-    <!-- Web pattern background -->
-    <svg class="web-bg web-left" viewBox="0 0 300 300" preserveAspectRatio="xMinYMin meet">
-      <g stroke="rgba(255,255,255,0.12)" stroke-width="1" fill="none">
-        <line x1="0" y1="0" x2="300" y2="300"/><line x1="0" y1="0" x2="150" y2="300"/><line x1="0" y1="0" x2="300" y2="150"/><line x1="0" y1="0" x2="0" y2="300"/><line x1="0" y1="0" x2="300" y2="0"/><line x1="0" y1="0" x2="220" y2="300"/><line x1="0" y1="0" x2="300" y2="220"/>
-        <path d="M40,0 Q35,35 0,40"/><path d="M90,0 Q80,80 0,90"/><path d="M150,0 Q130,130 0,150"/><path d="M220,0 Q190,190 0,220"/><path d="M300,20 Q160,160 20,300"/>
-      </g>
-    </svg>
-    <svg class="web-bg web-right" viewBox="0 0 300 300" preserveAspectRatio="xMaxYMin meet">
-      <g stroke="rgba(255,255,255,0.12)" stroke-width="1" fill="none">
-        <line x1="300" y1="0" x2="0" y2="300"/><line x1="300" y1="0" x2="150" y2="300"/><line x1="300" y1="0" x2="0" y2="150"/><line x1="300" y1="0" x2="300" y2="300"/><line x1="300" y1="0" x2="0" y2="0"/><line x1="300" y1="0" x2="80" y2="300"/><line x1="300" y1="0" x2="0" y2="220"/>
-        <path d="M260,0 Q265,35 300,40"/><path d="M210,0 Q220,80 300,90"/><path d="M150,0 Q170,130 300,150"/><path d="M80,0 Q110,190 300,220"/><path d="M0,20 Q140,160 280,300"/>
-      </g>
-    </svg>
-    <!-- Hanging spider -->
-    <div class="spider-thread"><div class="spider-body">🕷️</div></div>
+  <div id="loginPage" class="login-container minimal">
+    <!-- soft floating blobs -->
+    <div class="blob blob1"></div>
+    <div class="blob blob2"></div>
+    <div class="blob blob3"></div>
 
     <div class="login-card">
       <div class="login-logo">
-        <div class="spidey-emblem">
-          <svg viewBox="0 0 100 100" width="60" height="60" fill="#fff">
-            <!-- head -->
-            <ellipse cx="50" cy="26" rx="4" ry="3.2"/>
-            <!-- body: elongated teardrop -->
-            <path d="M50 30 C45.5 32 43.5 41 44.5 54 C45 65 47 76 50 84 C53 76 55 65 55.5 54 C56.5 41 54.5 32 50 30 Z"/>
-            <!-- 8 legs: tapered points (filled triangles for that classic sharp look) -->
-            <g fill="#fff">
-              <!-- upper-left outer -->
-              <path d="M46 32 C33 27 22 17 17 4 C21 18 32 29 46 34 Z"/>
-              <!-- upper-left inner -->
-              <path d="M47 36 C35 35 24 30 13 24 C24 33 36 39 48 39 Z"/>
-              <!-- upper-right outer -->
-              <path d="M54 32 C67 27 78 17 83 4 C79 18 68 29 54 34 Z"/>
-              <!-- upper-right inner -->
-              <path d="M53 36 C65 35 76 30 87 24 C76 33 64 39 52 39 Z"/>
-              <!-- lower-left inner -->
-              <path d="M47 52 C34 54 23 62 15 78 C25 64 38 57 49 56 Z"/>
-              <!-- lower-left outer -->
-              <path d="M48 60 C39 64 31 73 27 88 C33 74 44 65 50 63 Z"/>
-              <!-- lower-right inner -->
-              <path d="M53 52 C66 54 77 62 85 78 C75 64 62 57 51 56 Z"/>
-              <!-- lower-right outer -->
-              <path d="M52 60 C61 64 69 73 73 88 C67 74 56 65 50 63 Z"/>
-            </g>
+        <div class="mini-emblem">
+          <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="14" rx="2"/>
+            <path d="M3 8h18"/>
+            <path d="M8 14h4"/>
           </svg>
         </div>
-        <h1 class="spidey-title">ระบบเบิกผ้าม่าน Sale Meidea</h1>
+        <h1 class="mini-title">ระบบเบิกผ้าม่าน Sale Meidea</h1>
         <div id="loginStockStatus" class="login-stock-status">
           <span class="status-dot"></span>
           <span id="loginStockStatusText">กำลังโหลด...</span>
@@ -780,7 +749,7 @@
       <form id="loginForm">
         <div class="form-group"><label>ชื่อผู้ใช้</label><input type="text" id="loginUsername" class="form-input" placeholder="กรอกชื่อผู้ใช้" required></div>
         <div class="form-group"><label>รหัสผ่าน</label><input type="password" id="loginPassword" class="form-input" placeholder="กรอกรหัสผ่าน" required></div>
-        <button type="submit" class="btn btn-primary btn-spidey btn-block">🕸️ เข้าสู่ระบบ</button>
+        <button type="submit" class="btn btn-primary btn-mini btn-block">เข้าสู่ระบบ</button>
       </form>
       <div id="loginError" class="mt-4 text-center" style="color:var(--danger);display:none;"></div>
       <div class="login-footer">Designed & Developed by ทิวเอง</div>
