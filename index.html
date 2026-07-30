@@ -122,11 +122,23 @@
     .search-section-new .filter-select{flex:0 0 auto;min-width:150px;padding:12px 14px;font-size:14px}
     .search-section-new .btn{flex:0 0 auto;padding:12px 22px;white-space:nowrap}
     .favorites-row{display:flex;align-items:center;gap:10px;padding:0 24px 16px;flex-wrap:wrap;border-bottom:1px solid var(--border);margin-bottom:4px}
-    .search-mode-tabs{display:flex;align-items:center;gap:4px;padding:16px 24px 0;flex-wrap:wrap}
-    .search-mode-tab{padding:8px 18px;background:transparent;border:none;border-bottom:2px solid transparent;font-family:inherit;font-size:14px;font-weight:500;color:var(--text-secondary);cursor:pointer;transition:var(--transition)}
-    .search-mode-tab:hover{color:var(--text-primary)}
-    .search-mode-tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
-    .search-mode-hint{margin-left:auto;font-size:12px;color:var(--text-tertiary)}
+    .search-mode-switch-row{display:flex;align-items:center;gap:12px;padding:16px 24px 12px;flex-wrap:wrap}
+    .smart-switch-label{font-size:15px;font-weight:600;color:#0b5cad}
+    .smart-switch-hint{margin-left:auto;font-size:12px;color:var(--text-tertiary)}
+    .search-row-unified{display:flex;align-items:flex-end;gap:12px;padding:0 24px 16px;flex-wrap:nowrap}
+    .sr-field{display:flex;flex-direction:column;gap:5px;flex:1 1 0;min-width:0}
+    .sr-field.sr-code{flex:1.4 1 0}
+    .sr-field label{font-size:13px;font-weight:500;color:var(--text-primary);white-space:nowrap}
+    .sr-field .sr-opt{color:var(--text-tertiary);font-weight:400;font-size:12px}
+    .sr-field .sr-cut{color:#e65100;font-weight:400;font-size:12px}
+    .sr-field .form-input{width:100%;padding:12px 14px;font-size:14px}
+    .sr-field .search-input-group{margin:0}
+    .sr-field .search-input{width:100%}
+    .search-row-unified .form-input:disabled{background:#f0f0f2;color:#b0b0b8;cursor:not-allowed}
+    .sr-search-btn{flex:0 0 auto;white-space:nowrap;padding:12px 20px;align-self:flex-end}
+    .sr-reset-btn{flex:0 0 auto;padding:12px 16px;align-self:flex-end}
+    @media(max-width:900px){.search-row-unified{flex-wrap:wrap}.search-row-unified .sr-field{flex:1 1 45%}.sr-search-btn,.sr-reset-btn{flex:1 1 auto}}
+    .search-mode-switch-row + .search-row-unified{margin-top:0}
     .smart-search-box{margin:0 24px 16px;padding:16px;background:linear-gradient(135deg,#f0f7ff,#eef6ff);border:1px solid #cfe4ff;border-radius:var(--radius-md)}
     .smart-search-head{margin-bottom:12px}
     .smart-search-title{font-size:15px;font-weight:600;color:#0b5cad;margin-right:8px}
@@ -818,41 +830,43 @@
             </div>
           </div>
           
-          <!-- Search Mode Tabs -->
-          <div class="search-mode-tabs">
-            <button id="searchTabNormal" class="search-mode-tab active" onclick="switchSearchMode('normal')">🔍 ค้นหาปกติ</button>
-            <button id="searchTabSmart" class="search-mode-tab" onclick="switchSearchMode('smart')">✨ ค้นหาขนาดอัจฉริยะ</button>
-            <span class="search-mode-hint" id="searchModeHint"></span>
+          <!-- Smart mode switch -->
+          <div class="search-mode-switch-row">
+            <label class="toggle-switch">
+              <input type="checkbox" id="smartModeToggle" onchange="toggleSmartMode()">
+              <span class="toggle-slider"></span>
+            </label>
+            <span class="smart-switch-label">✨ ค้นหาขนาดอัจฉริยะ (Smart Size Search)</span>
+            <span class="smart-switch-hint" id="smartSwitchHint"></span>
           </div>
 
-          <!-- Normal Search -->
-          <div id="searchPanelNormal" class="search-section-new">
-            <div class="search-input-group">
-              <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
-              <input type="text" id="searchColorCode" class="search-input" placeholder="ค้นหารหัสสีผ้าม่าน...">
+          <!-- Search fields - all in one row -->
+          <div class="search-row-unified">
+            <div class="sr-field sr-code">
+              <label>รหัสสีผ้าม่าน <span class="sr-opt">(ไม่บังคับ)</span></label>
+              <div class="search-input-group">
+                <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
+                <input type="text" id="searchColorCode" class="search-input" placeholder="เช่น A6, 702">
+              </div>
             </div>
-            <select id="filterWidth" class="filter-select"><option value="">ความกว้างทั้งหมด</option></select>
-            <select id="filterHeight" class="filter-select"><option value="">ความสูงทั้งหมด</option></select>
-            <button id="searchBtn" class="btn btn-primary">🔍 ค้นหา</button>
-            <button id="resetSearchBtn" class="btn btn-secondary">↻ รีเซ็ต</button>
-          </div>
-
-          <!-- Smart size search -->
-          <div id="searchPanelSmart" class="smart-search-inputs" style="display:none;padding:4px 24px 16px;">
-            <div class="smart-field">
-              <label>รหัสสี (ไม่บังคับ)</label>
-              <input type="text" id="smartCode" class="form-input" placeholder="เช่น A6, 702">
+            <div class="sr-field">
+              <label>กว้างทั้งหมด (ม.)</label>
+              <select id="filterWidth" class="form-input" onchange="handleSearch()"><option value="">กว้างทั้งหมด</option></select>
             </div>
-            <div class="smart-field">
-              <label>กว้างที่ต้องการ (ม.)</label>
-              <input type="text" id="smartWidth" inputmode="decimal" class="form-input" placeholder="เช่น 1.20">
+            <div class="sr-field">
+              <label>สูงทั้งหมด (ม.)</label>
+              <select id="filterHeight" class="form-input" onchange="handleSearch()"><option value="">สูงทั้งหมด</option></select>
             </div>
-            <div class="smart-field">
-              <label>สูงที่ต้องการ (ม.)</label>
-              <input type="text" id="smartHeight" inputmode="decimal" class="form-input" placeholder="เช่น 1.20">
+            <div class="sr-field">
+              <label>กว้างต้องการ <span class="sr-cut">(ตัดแก้)</span></label>
+              <input type="text" id="smartWidth" inputmode="decimal" class="form-input" placeholder="เช่น 1.00" disabled>
             </div>
-            <button class="btn btn-primary" onclick="handleSmartSearch()" style="align-self:flex-end;">✨ ค้นหาขนาด</button>
-            <button class="btn btn-secondary" onclick="resetSearch()" style="align-self:flex-end;">↻ รีเซ็ต</button>
+            <div class="sr-field">
+              <label>สูงต้องการ <span class="sr-cut">(ตัดแก้)</span></label>
+              <input type="text" id="smartHeight" inputmode="decimal" class="form-input" placeholder="เช่น 1.00" disabled>
+            </div>
+            <button id="searchBtn" class="btn btn-primary sr-search-btn">🔍 ค้นหาผ้าม่าน</button>
+            <button id="resetSearchBtn" class="btn btn-secondary sr-reset-btn" title="รีเซ็ต">↻</button>
           </div>
 
           <!-- Favorites row (separate line) -->
@@ -2334,23 +2348,35 @@
       renderProducts(results);
     }
 
-    // สลับโหมดค้นหา ปกติ / อัจฉริยะ
-    function switchSearchMode(mode) {
-      var isSmart = (mode === 'smart');
-      document.getElementById('searchTabNormal').classList.toggle('active', !isSmart);
-      document.getElementById('searchTabSmart').classList.toggle('active', isSmart);
-      document.getElementById('searchPanelNormal').style.display = isSmart ? 'none' : 'flex';
-      document.getElementById('searchPanelSmart').style.display = isSmart ? 'flex' : 'none';
-      document.getElementById('searchModeHint').textContent = isSmart
-        ? '💡 หาขนาดพอดี หรือขนาดที่ตัดแก้ได้ (ตัดออกได้ไม่เกิน 50 ซม. ทั้งกว้างและสูง)'
-        : '';
+    // สวิตช์เปิด/ปิดโหมดอัจฉริยะ — สลับ enable/disable ช่องกรอก
+    function toggleSmartMode() {
+      var on = document.getElementById('smartModeToggle').checked;
+      var fw = document.getElementById('filterWidth');
+      var fh = document.getElementById('filterHeight');
+      var sw = document.getElementById('smartWidth');
+      var sh = document.getElementById('smartHeight');
+      var btn = document.getElementById('searchBtn');
+      if (on) {
+        // โหมดอัจฉริยะ: ปิด dropdown ขนาด, เปิดช่องกรอกขนาดที่ต้องการ
+        fw.disabled = true; fh.disabled = true;
+        fw.value = ''; fh.value = '';
+        sw.disabled = false; sh.disabled = false;
+        btn.textContent = '✨ ค้นหาขนาด';
+        document.getElementById('smartSwitchHint').textContent = '💡 โหมดอัจฉริยะ: ตัดออกได้ไม่เกิน 50 ซม. ทั้งกว้างและสูง';
+      } else {
+        // โหมดปกติ: เปิด dropdown ขนาด, ปิดช่องกรอกขนาดที่ต้องการ
+        fw.disabled = false; fh.disabled = false;
+        sw.disabled = true; sh.disabled = true;
+        sw.value = ''; sh.value = '';
+        btn.textContent = '🔍 ค้นหาผ้าม่าน';
+        document.getElementById('smartSwitchHint').textContent = '';
+      }
     }
 
     function resetSearch() {
       document.getElementById('searchColorCode').value = '';
       document.getElementById('filterWidth').value = '';
       document.getElementById('filterHeight').value = '';
-      var sc=document.getElementById('smartCode'); if(sc)sc.value='';
       var sw=document.getElementById('smartWidth'); if(sw)sw.value='';
       var sh=document.getElementById('smartHeight'); if(sh)sh.value='';
       lastSearchFn = null;
@@ -2360,7 +2386,7 @@
     // ค้นหาขนาดอัจฉริยะ: หาขนาดพอดี หรือขนาดที่ตัดออกได้ไม่เกิน 50 ซม. (ทั้งกว้างและสูง)
     var MAX_CUT = 0.50; // ตัดออกได้ไม่เกิน 50 ซม. = 0.50 ม.
     function handleSmartSearch() {
-      var code = document.getElementById('smartCode').value.trim().toUpperCase();
+      var code = document.getElementById('searchColorCode').value.trim().toUpperCase();
       var wStr = document.getElementById('smartWidth').value.trim().replace(',', '.');
       var hStr = document.getElementById('smartHeight').value.trim().replace(',', '.');
       var wantW = parseFloat(wStr);
@@ -5907,13 +5933,20 @@
     function setupEventListeners() {
       document.getElementById('loginForm').addEventListener('submit', handleLogin);
       document.getElementById('logoutBtn').addEventListener('click', handleLogout);
-      document.getElementById('searchBtn').addEventListener('click', handleSearch);
+      document.getElementById('searchBtn').addEventListener('click', function() {
+        if (document.getElementById('smartModeToggle').checked) handleSmartSearch();
+        else handleSearch();
+      });
       document.getElementById('resetSearchBtn').addEventListener('click', resetSearch);
-      // เลือกขนาดกว้าง/สูง แล้วค้นหาทันที
-      document.getElementById('filterWidth').addEventListener('change', handleSearch);
-      document.getElementById('filterHeight').addEventListener('change', handleSearch);
       document.getElementById('searchColorCode').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') handleSearch();
+        if (e.key === 'Enter') {
+          if (document.getElementById('smartModeToggle').checked) handleSmartSearch();
+          else handleSearch();
+        }
+      });
+      ['smartWidth','smartHeight'].forEach(function(id){
+        var el=document.getElementById(id);
+        if(el) el.addEventListener('keypress', function(e){ if(e.key==='Enter') handleSmartSearch(); });
       });
       document.getElementById('cartToggle').addEventListener('click', toggleCart);
       document.getElementById('checkoutBtn').addEventListener('click', handleCheckout);
