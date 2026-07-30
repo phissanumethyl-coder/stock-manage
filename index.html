@@ -31,6 +31,19 @@
     @keyframes spin{to{transform:rotate(360deg)}}
     /* Fresh Blue Sky Theme ☀️💙 */
     .login-container{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#4fc3f7 0%,#29b6f6 20%,#03a9f4 40%,#0288d1 60%,#0277bd 80%,#01579b 100%);padding:20px;position:relative;overflow:hidden}
+    /* Spider-Man theme */
+    .login-container.spiderman{background:linear-gradient(135deg,#b71c1c 0%,#c62828 30%,#1a237e 75%,#0d1440 100%)}
+    .login-container.spiderman::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 20% 20%,rgba(255,255,255,0.06) 0%,transparent 40%),radial-gradient(circle at 80% 80%,rgba(255,255,255,0.05) 0%,transparent 40%);pointer-events:none}
+    .web-bg{position:absolute;width:340px;height:340px;pointer-events:none;opacity:.9}
+    .web-left{top:0;left:0}
+    .web-right{top:0;right:0}
+    .spider-thread{position:absolute;top:0;left:50%;width:2px;height:120px;background:linear-gradient(180deg,rgba(255,255,255,0.5),rgba(255,255,255,0.1));transform:translateX(-50%);animation:spiderDrop 4s ease-in-out infinite}
+    .spider-body{position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);font-size:26px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.4))}
+    @keyframes spiderDrop{0%,100%{height:100px}50%{height:170px}}
+    .spidey-emblem{width:76px;height:76px;margin:0 auto 16px;border-radius:50%;background:radial-gradient(circle,#e53935,#b71c1c);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 30px rgba(229,57,53,0.6),inset 0 2px 8px rgba(255,255,255,0.2);border:3px solid rgba(255,255,255,0.25)}
+    .spidey-title{font-size:24px;font-weight:700;background:linear-gradient(135deg,#e53935,#1a237e);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:12px;line-height:1.3}
+    .btn-spidey{background:linear-gradient(135deg,#e53935 0%,#b71c1c 45%,#1a237e 100%)!important;border:none;font-weight:700;letter-spacing:0.5px;box-shadow:0 4px 20px rgba(229,57,53,0.45);color:#fff}
+    .btn-spidey:hover{transform:translateY(-2px);box-shadow:0 6px 28px rgba(229,57,53,0.6)}
     .login-container::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,0.05);pointer-events:none}
     
     /* Sun */
@@ -124,18 +137,20 @@
     .favorites-row{display:flex;align-items:center;gap:10px;padding:0 24px 16px;flex-wrap:wrap;border-bottom:1px solid var(--border);margin-bottom:4px}
     .search-mode-switch-row{display:flex;align-items:center;gap:12px;padding:16px 24px 12px;flex-wrap:wrap}
     .smart-switch-label{font-size:15px;font-weight:600;color:#0b5cad}
-    .smart-switch-hint{margin-left:auto;font-size:12px;color:var(--text-tertiary)}
+    .smart-switch-hint{margin-left:auto;font-size:12px;color:var(--text-tertiary);min-height:16px}
     .search-row-unified{display:flex;align-items:flex-end;gap:12px;padding:0 24px 16px;flex-wrap:nowrap}
     .sr-field{display:flex;flex-direction:column;gap:5px;flex:1 1 0;min-width:0}
     .sr-field.sr-code{flex:1.4 1 0}
     .sr-field label{font-size:13px;font-weight:500;color:var(--text-primary);white-space:nowrap}
     .sr-field .sr-opt{color:var(--text-tertiary);font-weight:400;font-size:12px}
     .sr-field .sr-cut{color:#e65100;font-weight:400;font-size:12px}
-    .sr-field .form-input{width:100%;padding:12px 14px;font-size:14px}
-    .sr-field .search-input-group{margin:0}
-    .sr-field .search-input{width:100%}
-    .search-row-unified .form-input:disabled{background:#f0f0f2;color:#b0b0b8;cursor:not-allowed}
-    .sr-search-btn{flex:0 0 auto;white-space:nowrap;padding:12px 20px;align-self:flex-end}
+    .sr-field .form-input{width:100%;padding:12px 14px;font-size:14px;background:#fff;box-sizing:border-box}
+    .search-row-unified .form-input:disabled,.search-row-unified select:disabled{background:#f0f0f2;color:#b0b0b8;cursor:not-allowed}
+    /* ตรึงความสูงช่องและปุ่มไม่ให้ขยับตอนสลับสวิตช์ */
+    .search-row-unified .form-input,.search-row-unified .search-input,.sr-search-btn,.sr-reset-btn{height:46px}
+    .sr-field .search-input-group{margin:0;height:46px}
+    .sr-field .search-input{width:100%;height:46px;box-sizing:border-box;background:#fff}
+    .sr-search-btn{flex:0 0 160px;width:160px;white-space:nowrap;padding:12px 20px;align-self:flex-end;justify-content:center}
     .sr-reset-btn{flex:0 0 auto;padding:12px 16px;align-self:flex-end}
     @media(max-width:900px){.search-row-unified{flex-wrap:wrap}.search-row-unified .sr-field{flex:1 1 45%}.sr-search-btn,.sr-reset-btn{flex:1 1 auto}}
     .search-mode-switch-row + .search-row-unified{margin-top:0}
@@ -709,53 +724,36 @@
   <div id="loadingOverlay" class="loading-overlay"><div class="spinner"></div></div>
   <div id="toastContainer" class="toast-container"></div>
 
-  <div id="loginPage" class="login-container">
-    <!-- Sun with rays -->
-    <div class="sun"></div>
-    <div class="sun-rays">
-      <div class="sun-ray" style="transform:rotate(0deg)"></div>
-      <div class="sun-ray" style="transform:rotate(30deg)"></div>
-      <div class="sun-ray" style="transform:rotate(60deg)"></div>
-      <div class="sun-ray" style="transform:rotate(90deg)"></div>
-      <div class="sun-ray" style="transform:rotate(120deg)"></div>
-      <div class="sun-ray" style="transform:rotate(150deg)"></div>
-      <div class="sun-ray" style="transform:rotate(180deg)"></div>
-      <div class="sun-ray" style="transform:rotate(210deg)"></div>
-      <div class="sun-ray" style="transform:rotate(240deg)"></div>
-      <div class="sun-ray" style="transform:rotate(270deg)"></div>
-      <div class="sun-ray" style="transform:rotate(300deg)"></div>
-      <div class="sun-ray" style="transform:rotate(330deg)"></div>
-    </div>
-    
-    <!-- Clouds -->
-    <div class="cloud c1"></div>
-    <div class="cloud c2"></div>
-    <div class="cloud c3"></div>
-    <div class="cloud c4"></div>
-    
-    <!-- Birds -->
-    <div class="bird b1"></div>
-    <div class="bird b2"></div>
-    <div class="bird b3"></div>
-    
-    <!-- Sparkles -->
-    <div class="sparkle" style="top:15%;left:20%;animation-delay:0s"></div>
-    <div class="sparkle" style="top:25%;right:25%;animation-delay:0.5s"></div>
-    <div class="sparkle" style="top:40%;left:15%;animation-delay:1s"></div>
-    <div class="sparkle" style="top:50%;right:18%;animation-delay:1.5s"></div>
-    <div class="sparkle" style="top:30%;left:35%;animation-delay:2s"></div>
-    <div class="sparkle" style="top:60%;right:30%;animation-delay:0.8s"></div>
-    <div class="sparkle" style="top:20%;left:50%;animation-delay:1.2s"></div>
-    <div class="sparkle" style="top:45%;right:40%;animation-delay:0.3s"></div>
-    
-    <!-- Waves -->
-    <div class="wave w1"></div>
-    <div class="wave w2"></div>
-    
+  <div id="loginPage" class="login-container spiderman">
+    <!-- Web pattern background -->
+    <svg class="web-bg web-left" viewBox="0 0 300 300" preserveAspectRatio="xMinYMin meet">
+      <g stroke="rgba(255,255,255,0.12)" stroke-width="1" fill="none">
+        <line x1="0" y1="0" x2="300" y2="300"/><line x1="0" y1="0" x2="150" y2="300"/><line x1="0" y1="0" x2="300" y2="150"/><line x1="0" y1="0" x2="0" y2="300"/><line x1="0" y1="0" x2="300" y2="0"/><line x1="0" y1="0" x2="220" y2="300"/><line x1="0" y1="0" x2="300" y2="220"/>
+        <path d="M40,0 Q35,35 0,40"/><path d="M90,0 Q80,80 0,90"/><path d="M150,0 Q130,130 0,150"/><path d="M220,0 Q190,190 0,220"/><path d="M300,20 Q160,160 20,300"/>
+      </g>
+    </svg>
+    <svg class="web-bg web-right" viewBox="0 0 300 300" preserveAspectRatio="xMaxYMin meet">
+      <g stroke="rgba(255,255,255,0.12)" stroke-width="1" fill="none">
+        <line x1="300" y1="0" x2="0" y2="300"/><line x1="300" y1="0" x2="150" y2="300"/><line x1="300" y1="0" x2="0" y2="150"/><line x1="300" y1="0" x2="300" y2="300"/><line x1="300" y1="0" x2="0" y2="0"/><line x1="300" y1="0" x2="80" y2="300"/><line x1="300" y1="0" x2="0" y2="220"/>
+        <path d="M260,0 Q265,35 300,40"/><path d="M210,0 Q220,80 300,90"/><path d="M150,0 Q170,130 300,150"/><path d="M80,0 Q110,190 300,220"/><path d="M0,20 Q140,160 280,300"/>
+      </g>
+    </svg>
+    <!-- Hanging spider -->
+    <div class="spider-thread"><div class="spider-body">🕷️</div></div>
+
     <div class="login-card">
       <div class="login-logo">
-        <div class="sky-badge"><span class="sky-icon">☀️</span> ท้องฟ้าสดใส วันนี้อากาศดี <span class="sky-icon">💙</span></div>
-        <h1 class="sky-title">ระบบเบิกผ้าม่าน Sale Meidea</h1>
+        <div class="spidey-emblem">
+          <svg viewBox="0 0 100 100" width="56" height="56">
+            <g fill="#fff">
+              <ellipse cx="50" cy="42" rx="7" ry="11"/>
+              <path d="M50 42 L50 20 M50 42 L34 26 M50 42 L66 26 M50 42 L30 40 M50 42 L70 40" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+              <path d="M50 55 L38 78 M50 55 L62 78 M50 55 L30 68 M50 55 L70 68" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+              <line x1="50" y1="53" x2="50" y2="60" stroke="#fff" stroke-width="2.5"/>
+            </g>
+          </svg>
+        </div>
+        <h1 class="spidey-title">ระบบเบิกผ้าม่าน Sale Meidea</h1>
         <div id="loginStockStatus" class="login-stock-status">
           <span class="status-dot"></span>
           <span id="loginStockStatusText">กำลังโหลด...</span>
@@ -765,7 +763,7 @@
       <form id="loginForm">
         <div class="form-group"><label>ชื่อผู้ใช้</label><input type="text" id="loginUsername" class="form-input" placeholder="กรอกชื่อผู้ใช้" required></div>
         <div class="form-group"><label>รหัสผ่าน</label><input type="password" id="loginPassword" class="form-input" placeholder="กรอกรหัสผ่าน" required></div>
-        <button type="submit" class="btn btn-primary btn-sky btn-block">☀️ เข้าสู่ระบบ</button>
+        <button type="submit" class="btn btn-primary btn-spidey btn-block">🕸️ เข้าสู่ระบบ</button>
       </form>
       <div id="loginError" class="mt-4 text-center" style="color:var(--danger);display:none;"></div>
       <div class="login-footer">Designed & Developed by ทิวเอง</div>
