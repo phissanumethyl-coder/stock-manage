@@ -122,6 +122,11 @@
     .search-section-new .filter-select{flex:0 0 auto;min-width:150px;padding:12px 14px;font-size:14px}
     .search-section-new .btn{flex:0 0 auto;padding:12px 22px;white-space:nowrap}
     .favorites-row{display:flex;align-items:center;gap:10px;padding:0 24px 16px;flex-wrap:wrap;border-bottom:1px solid var(--border);margin-bottom:4px}
+    .search-mode-tabs{display:flex;align-items:center;gap:4px;padding:16px 24px 0;flex-wrap:wrap}
+    .search-mode-tab{padding:8px 18px;background:transparent;border:none;border-bottom:2px solid transparent;font-family:inherit;font-size:14px;font-weight:500;color:var(--text-secondary);cursor:pointer;transition:var(--transition)}
+    .search-mode-tab:hover{color:var(--text-primary)}
+    .search-mode-tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+    .search-mode-hint{margin-left:auto;font-size:12px;color:var(--text-tertiary)}
     .smart-search-box{margin:0 24px 16px;padding:16px;background:linear-gradient(135deg,#f0f7ff,#eef6ff);border:1px solid #cfe4ff;border-radius:var(--radius-md)}
     .smart-search-head{margin-bottom:12px}
     .smart-search-title{font-size:15px;font-weight:600;color:#0b5cad;margin-right:8px}
@@ -519,7 +524,7 @@
     @keyframes modalIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
     .modal-header{padding:24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
     .modal-title{font-size:20px;font-weight:600}
-    .modal-close{width:32px;height:32px;border:none;background:var(--bg-secondary);border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center}
+    .modal-close{position:absolute;top:16px;right:16px;z-index:10;width:32px;height:32px;border:none;background:var(--bg-secondary);border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center}
     .modal-body{padding:24px}
     .modal-footer{padding:24px;border-top:1px solid var(--border);display:flex;gap:12px;justify-content:flex-end}
     .toast-container{position:fixed;top:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px}
@@ -813,8 +818,15 @@
             </div>
           </div>
           
-          <!-- Search Section - All in one row -->
-          <div class="search-section-new">
+          <!-- Search Mode Tabs -->
+          <div class="search-mode-tabs">
+            <button id="searchTabNormal" class="search-mode-tab active" onclick="switchSearchMode('normal')">🔍 ค้นหาปกติ</button>
+            <button id="searchTabSmart" class="search-mode-tab" onclick="switchSearchMode('smart')">✨ ค้นหาขนาดอัจฉริยะ</button>
+            <span class="search-mode-hint" id="searchModeHint"></span>
+          </div>
+
+          <!-- Normal Search -->
+          <div id="searchPanelNormal" class="search-section-new">
             <div class="search-input-group">
               <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
               <input type="text" id="searchColorCode" class="search-input" placeholder="ค้นหารหัสสีผ้าม่าน...">
@@ -826,26 +838,21 @@
           </div>
 
           <!-- Smart size search -->
-          <div class="smart-search-box">
-            <div class="smart-search-head">
-              <span class="smart-search-title">✨ ค้นหาขนาดอัจฉริยะ</span>
-              <span class="smart-search-sub">หาขนาดพอดี หรือขนาดที่ตัดแก้ได้ (ตัดออกได้ไม่เกิน 50 ซม. ทั้งกว้างและสูง)</span>
+          <div id="searchPanelSmart" class="smart-search-inputs" style="display:none;padding:4px 24px 16px;">
+            <div class="smart-field">
+              <label>รหัสสี (ไม่บังคับ)</label>
+              <input type="text" id="smartCode" class="form-input" placeholder="เช่น A6, 702">
             </div>
-            <div class="smart-search-inputs">
-              <div class="smart-field">
-                <label>รหัสสี (ไม่บังคับ)</label>
-                <input type="text" id="smartCode" class="form-input" placeholder="เช่น A6, 702">
-              </div>
-              <div class="smart-field">
-                <label>กว้างที่ต้องการ (ม.)</label>
-                <input type="text" id="smartWidth" inputmode="decimal" class="form-input" placeholder="เช่น 1.20">
-              </div>
-              <div class="smart-field">
-                <label>สูงที่ต้องการ (ม.)</label>
-                <input type="text" id="smartHeight" inputmode="decimal" class="form-input" placeholder="เช่น 1.20">
-              </div>
-              <button class="btn btn-primary" onclick="handleSmartSearch()" style="align-self:flex-end;">✨ ค้นหาขนาด</button>
+            <div class="smart-field">
+              <label>กว้างที่ต้องการ (ม.)</label>
+              <input type="text" id="smartWidth" inputmode="decimal" class="form-input" placeholder="เช่น 1.20">
             </div>
+            <div class="smart-field">
+              <label>สูงที่ต้องการ (ม.)</label>
+              <input type="text" id="smartHeight" inputmode="decimal" class="form-input" placeholder="เช่น 1.20">
+            </div>
+            <button class="btn btn-primary" onclick="handleSmartSearch()" style="align-self:flex-end;">✨ ค้นหาขนาด</button>
+            <button class="btn btn-secondary" onclick="resetSearch()" style="align-self:flex-end;">↻ รีเซ็ต</button>
           </div>
 
           <!-- Favorites row (separate line) -->
@@ -1006,9 +1013,6 @@
             </div>
           </div>
           <div style="padding:0 20px 20px;">
-            <div class="sheet-hint">
-              💡 กรอกเหมือน Google Sheet — แต่ละ<b>แท็บด้านล่าง = รหัสสี 1 รหัส</b> สลับไปมาได้โดยข้อมูลไม่หาย · กด <b>Enter</b> ที่ช่องสุดท้ายเพื่อขึ้นแถวใหม่ · วางจาก Excel ได้ (Ctrl+V) · กด <b>💾 บันทึกทั้งหมด</b> ทีเดียวทุกแท็บขึ้น Database เลย
-            </div>
             <div id="importLockBanner" class="import-lock-banner" style="display:none;"></div>
 
             <!-- แท็บรหัสสี (เหมือน sheet tabs) -->
@@ -1561,6 +1565,7 @@
     var stockEnabled = true;
     var dimensions = { widths: [], heights: [] };
     var allStock = {};
+    var lastSearchFn = null; // จำการค้นหาล่าสุดเพื่อ refresh realtime
     var allTransactionsData = [];
     var currentPage = '';
     var currentTabIndex = 0;
@@ -1569,9 +1574,9 @@
     var isMobile = false;
     
     var navConfig = {
-      sales: [{id:'withdraw',label:'เบิกสต๊อก',page:'pageWithdraw'},{id:'colorChart',label:'Shart สี',page:'pageColorChart'},{id:'myHistory',label:'ประวัติของฉัน',page:'pageMyHistory'},{id:'dashboard',label:'Dashboard',page:'pageDashboard'}],
-      staff: [{id:'withdraw',label:'เบิกสต๊อก',page:'pageWithdraw'},{id:'colorChart',label:'Shart สี',page:'pageColorChart'},{id:'myHistory',label:'ประวัติของฉัน',page:'pageMyHistory'},{id:'orderMatching',label:'จับคู่ออเดอร์',page:'pageOrderMatching'},{id:'importStock',label:'นำเข้าสต๊อก',page:'pageImportStock'},{id:'transactions',label:'ประวัติการเบิก',page:'pageTransactions'},{id:'dashboard',label:'Dashboard',page:'pageDashboard'}],
-      admin: [{id:'withdraw',label:'เบิกสต๊อก',page:'pageWithdraw'},{id:'colorChart',label:'Shart สี',page:'pageColorChart'},{id:'orderMatching',label:'จับคู่ออเดอร์',page:'pageOrderMatching'},{id:'importStock',label:'นำเข้าสต๊อก',page:'pageImportStock'},{id:'transactions',label:'ประวัติการเบิก',page:'pageTransactions'},{id:'dashboard',label:'Dashboard',page:'pageDashboard'},{id:'users',label:'ผู้ใช้งาน',page:'pageUsers'},{id:'activityLog',label:'Activity Log',page:'pageActivityLog'}]
+      sales: [{id:'withdraw',label:'📤 เบิกสต๊อก',page:'pageWithdraw'},{id:'colorChart',label:'🎨 Shart สี',page:'pageColorChart'},{id:'myHistory',label:'📋 ประวัติของฉัน',page:'pageMyHistory'},{id:'dashboard',label:'📊 Dashboard',page:'pageDashboard'}],
+      staff: [{id:'withdraw',label:'📤 เบิกสต๊อก',page:'pageWithdraw'},{id:'colorChart',label:'🎨 Shart สี',page:'pageColorChart'},{id:'myHistory',label:'📋 ประวัติของฉัน',page:'pageMyHistory'},{id:'orderMatching',label:'🔗 จับคู่ออเดอร์',page:'pageOrderMatching'},{id:'importStock',label:'📥 นำเข้าสต๊อก',page:'pageImportStock'},{id:'transactions',label:'🧾 ประวัติการเบิก',page:'pageTransactions'},{id:'dashboard',label:'📊 Dashboard',page:'pageDashboard'}],
+      admin: [{id:'withdraw',label:'📤 เบิกสต๊อก',page:'pageWithdraw'},{id:'colorChart',label:'🎨 Shart สี',page:'pageColorChart'},{id:'orderMatching',label:'🔗 จับคู่ออเดอร์',page:'pageOrderMatching'},{id:'importStock',label:'📥 นำเข้าสต๊อก',page:'pageImportStock'},{id:'transactions',label:'🧾 ประวัติการเบิก',page:'pageTransactions'},{id:'dashboard',label:'📊 Dashboard',page:'pageDashboard'},{id:'users',label:'👥 ผู้ใช้งาน',page:'pageUsers'},{id:'activityLog',label:'📜 Activity Log',page:'pageActivityLog'}]
     };
 
     // ============================================
@@ -1934,12 +1939,9 @@
         allStock = snapshot.val() || {};
         extractDimensions();
         
-        // Refresh current search if on withdraw page
-        if (currentPage === 'pageWithdraw') {
-          var colorCode = document.getElementById('searchColorCode').value.trim();
-          if (colorCode) {
-            handleSearch();
-          }
+        // Refresh การค้นหาที่ทำล่าสุด (ทุกโหมด) เมื่อสต๊อกเปลี่ยน realtime
+        if (currentPage === 'pageWithdraw' && typeof lastSearchFn === 'function') {
+          lastSearchFn();
         }
       });
       
@@ -2291,6 +2293,7 @@
         showToast('กรุณาระบุเงื่อนไขการค้นหา', 'warning');
         return;
       }
+      lastSearchFn = handleSearch;
       
       var grid = document.getElementById('productGrid');
       grid.innerHTML = '<div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div>';
@@ -2331,6 +2334,18 @@
       renderProducts(results);
     }
 
+    // สลับโหมดค้นหา ปกติ / อัจฉริยะ
+    function switchSearchMode(mode) {
+      var isSmart = (mode === 'smart');
+      document.getElementById('searchTabNormal').classList.toggle('active', !isSmart);
+      document.getElementById('searchTabSmart').classList.toggle('active', isSmart);
+      document.getElementById('searchPanelNormal').style.display = isSmart ? 'none' : 'flex';
+      document.getElementById('searchPanelSmart').style.display = isSmart ? 'flex' : 'none';
+      document.getElementById('searchModeHint').textContent = isSmart
+        ? '💡 หาขนาดพอดี หรือขนาดที่ตัดแก้ได้ (ตัดออกได้ไม่เกิน 50 ซม. ทั้งกว้างและสูง)'
+        : '';
+    }
+
     function resetSearch() {
       document.getElementById('searchColorCode').value = '';
       document.getElementById('filterWidth').value = '';
@@ -2338,6 +2353,7 @@
       var sc=document.getElementById('smartCode'); if(sc)sc.value='';
       var sw=document.getElementById('smartWidth'); if(sw)sw.value='';
       var sh=document.getElementById('smartHeight'); if(sh)sh.value='';
+      lastSearchFn = null;
       document.getElementById('productGrid').innerHTML = '<div class="empty-state"><div class="empty-state-icon">🔍</div><h3>ค้นหาผ้าม่าน</h3><p>กรอกรหัสสีเพื่อค้นหาสินค้า</p></div>';
     }
 
@@ -2354,6 +2370,7 @@
         showToast('กรุณากรอกทั้งความกว้างและความสูงที่ต้องการ', 'warning');
         return;
       }
+      lastSearchFn = handleSmartSearch;
 
       var grid = document.getElementById('productGrid');
       grid.innerHTML = '<div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div>';
@@ -4723,14 +4740,18 @@
     var importStockListener = null;
 
     function initImportSheet() {
-      if (!importLoaded) {
+      startImportRealtimeListener();
+      // มีข้อมูลค้างแก้ที่ยังไม่บันทึก (dirty) ไหม?
+      var anyDirty = Object.keys(importTabs).some(function(c){ return importTabs[c] && importTabs[c].dirty; });
+      if (!importLoaded || !anyDirty) {
+        // โหลดสดจาก DB ทุกครั้งที่เข้าหน้า เพื่อให้เห็นยอดล่าสุด (เบิก/คืนจากที่อื่น)
         reloadImportFromDB();
       } else {
+        // มีข้อมูลค้างแก้ → ไม่ทับ แค่ render + sync ยอดของแท็บที่ยังไม่แก้
         renderImportTabs();
         renderImportGrid();
+        applyImportLockState();
       }
-      applyImportLockState();
-      startImportRealtimeListener();
     }
 
     // ฟังการเปลี่ยนแปลง stock แบบ realtime (เมื่อมีคนเบิก/คืน)
@@ -4802,7 +4823,9 @@
         '[onclick*="saveAllImportTabs"]', '[onclick*="promptAddImportTab"]',
         '[onclick*="addImportRow"]', '[onclick*="addImportRows"]',
         '[onclick*="sortCurrentTab"]', '[onclick*="renameCurrentTab"]',
-        '[onclick*="deleteCurrentTab"]', '.sheet-del-btn', '.sheet-tab-add'
+        '[onclick*="deleteCurrentTab"]', '.sheet-del-btn', '.sheet-tab-add',
+        '[onclick*="handleExcelUpload"]', '[onclick*="excelUploadInput"]',
+        '[onclick*="reloadImportFromDB"]'
       ];
       actionSelectors.forEach(function(sel) {
         page.querySelectorAll(sel).forEach(function(btn) {
