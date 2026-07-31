@@ -1886,6 +1886,7 @@
       document.getElementById('loginForm').reset();
       document.getElementById('loginError').style.display = 'none';
       document.getElementById('onlineUsersBadge').style.display = 'none';
+      document.getElementById('headerStockControls').style.display = 'none';
       announcementDismissed = false;
       
       // หยุด countdown
@@ -1928,12 +1929,17 @@
       buildBottomNavigation();
       loadDimensions();
       setupRealtimeListeners();
-      loadFavorites(); // โหลด favorites
-      initAutoClose(); // เริ่ม auto close timer
-      initPresence(); // เริ่ม presence system
-      initCountdown(); // เริ่ม countdown
-      
-      // แสดง Online Badge + Stock Controls สำหรับ staff/admin
+      loadFavorites();
+      initAutoClose();
+      initPresence();
+      initCountdown();
+
+      // Reset state ก่อนเสมอ (กัน state ค้างจาก user เก่า)
+      document.getElementById('onlineUsersBadge').style.display = 'none';
+      document.getElementById('headerStockControls').style.display = 'none';
+      resetSearchState();
+
+      // แสดง Online Badge + Stock Controls สำหรับ staff/admin เท่านั้น
       if (currentUser.role === 'staff' || currentUser.role === 'admin') {
         document.getElementById('onlineUsersBadge').style.display = 'inline-flex';
         document.getElementById('headerStockControls').style.display = 'flex';
@@ -2375,6 +2381,17 @@
         btn.textContent = '🔍 ค้นหาผ้าม่าน';
         document.getElementById('smartSwitchHint').textContent = '';
       }
+    }
+
+    // ล้าง state การค้นหาทั้งหมด (ใช้ตอน login ใหม่ กัน state ค้างจาก user เก่า)
+    function resetSearchState() {
+      var ids = ['searchColorCode','filterWidth','filterHeight','smartWidth','smartHeight'];
+      ids.forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+      var toggle = document.getElementById('smartModeToggle');
+      if (toggle) { toggle.checked = false; toggleSmartMode(); }
+      lastSearchFn = null;
+      var grid = document.getElementById('productGrid');
+      if (grid) grid.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🔍</div><h3>ค้นหาผ้าม่าน</h3><p>กรอกรหัสสีเพื่อค้นหาสินค้า</p></div>';
     }
 
     function resetSearch() {
