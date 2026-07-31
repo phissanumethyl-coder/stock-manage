@@ -1063,7 +1063,6 @@
               <button class="btn btn-export btn-sm" onclick="exportAllStock()">💾 Backup สต๊อก (Excel)</button>
               <button class="btn btn-secondary btn-sm" onclick="document.getElementById('excelUploadInput').click()">📤 อัพโหลด Excel</button>
               <input type="file" id="excelUploadInput" accept=".xlsx,.xls,.csv" style="display:none;" onchange="handleExcelUpload(event)">
-              <button class="btn btn-secondary btn-sm" onclick="reloadImportFromDB()">🔄 โหลดจาก Database ใหม่</button>
               <button class="btn btn-primary btn-sm" onclick="saveAllImportTabs()">💾 บันทึกทั้งหมด</button>
             </div>
           </div>
@@ -4768,7 +4767,7 @@
     // ============================================
     var allImportHistory = [];
     var importHistoryPage = 1;
-    var IMPORT_PAGE_SIZE = 30;
+    var IMPORT_PAGE_SIZE = 10;
     var importHistoryFilter = { range: 'today' };
 
     function loadImportHistory() {
@@ -5300,7 +5299,16 @@
           renderImportTabs(); renderImportGrid();
           return;
         }
-
+        captureCurrentGrid();
+        // ถ้ารหัสนี้เคยถูกสั่งลบไว้ ให้ยกเลิกการลบ (เพราะเพิ่มกลับมาแล้ว = อัพเดท ไม่ใช่ลบ)
+        var wasDeleted = pendingDeleteCodes[code];
+        if (wasDeleted) delete pendingDeleteCodes[code];
+        importTabs[code] = { rows: [ blankRow() ], dirty: true, isNew: !wasDeleted };
+        currentImportTab = code;
+        renderImportTabs();
+        renderImportGrid();
+        applyImportLockState();
+        showToast('เพิ่มรหัสสี ' + code + ' แล้ว', 'success');
       });
     }
 
