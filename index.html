@@ -577,12 +577,33 @@
     @keyframes toastSpin{to{transform:rotate(360deg)}}
     @keyframes toastIn{from{opacity:0;transform:translateX(100%)}to{opacity:1;transform:translateX(0)}}
     .date-filter{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+    .import-history-filters{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+    .quick-date-btns{display:flex;gap:4px}
+    .quick-date-btn{padding:6px 14px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:16px;font-family:inherit;font-size:13px;font-weight:500;color:var(--text-secondary);cursor:pointer;transition:var(--transition)}
+    .quick-date-btn:hover{background:var(--bg-tertiary)}
+    .quick-date-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+    .pagination-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 20px;flex-wrap:wrap;border-top:1px solid var(--border)}
+    .pagination-info{font-size:13px;color:var(--text-tertiary)}
+    .pagination-btns{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+    .page-btn{min-width:36px;padding:7px 12px;background:var(--bg-primary);border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;font-weight:500;color:var(--text-primary);cursor:pointer;transition:var(--transition)}
+    .page-btn:hover:not(:disabled){background:var(--bg-secondary);border-color:var(--accent)}
+    .page-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+    .page-btn:disabled{opacity:.4;cursor:not-allowed}
+    .page-dots{padding:0 4px;color:var(--text-tertiary)}
+    @media(max-width:768px){.import-history-filters{width:100%}.quick-date-btns{width:100%;justify-content:space-between}.pagination-bar{flex-direction:column;align-items:stretch}.pagination-btns{justify-content:center}}
     .date-input{padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;font-size:14px}
     .date-input:focus{outline:none;border-color:var(--accent)}
     .empty-state-icon{font-size:48px;margin-bottom:16px;opacity:.5}
     .empty-state h3{font-size:18px;font-weight:500;margin-bottom:8px;color:var(--text-primary)}
-    @media (max-width:768px){.header-content{flex-wrap:wrap;gap:12px}.main-content{padding:16px}.cart-panel{width:calc(100vw - 48px);right:-12px}.product-grid{grid-template-columns:1fr}.stats-grid{grid-template-columns:repeat(2,1fr)}.modal{max-width:calc(100vw - 40px)}
-      /* มือถือ: พับ controls เก็บ — แสดงปุ่มเฉพาะ staff/admin */
+    @media (max-width:768px){.header-content{flex-wrap:wrap;gap:8px;padding:10px 14px}.main-content{padding:16px}.cart-panel{width:calc(100vw - 48px);right:-12px}.product-grid{grid-template-columns:1fr}.stats-grid{grid-template-columns:repeat(2,1fr)}.modal{max-width:calc(100vw - 40px)}
+      /* ลดขนาด header บนมือถือ */
+      .header-brand h1{font-size:17px}
+      .header-user{gap:6px}
+      .user-info{display:none}
+      #logoutBtn{padding:6px 12px;font-size:12px}
+      #stockStatusBadge{padding:5px 10px;font-size:12px}
+      .nav-tabs{padding:0 10px!important;gap:4px!important}
+      .nav-tab{padding:10px 12px!important;font-size:13px!important}
       .mobile-controls-toggle{display:none!important}
       .mobile-controls-toggle.for-controls{display:inline-flex!important;align-items:center;gap:6px;padding:8px 14px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:20px;font-family:inherit;font-size:13px;font-weight:600;color:var(--text-primary);cursor:pointer;order:-1}
       .mobile-controls-toggle .mct-arrow{transition:transform .25s}
@@ -1039,6 +1060,7 @@
             <h2 class="card-title">📥 นำเข้า/แก้ไขสต๊อก (แบบ Google Sheet)<span class="live-indicator"><span class="live-dot"></span>Live</span></h2>
             <div style="display:flex;gap:8px;align-items:center;">
               <button class="btn btn-secondary btn-sm" onclick="downloadImportTemplate()">📄 ดาวน์โหลด Template</button>
+              <button class="btn btn-export btn-sm" onclick="exportAllStock()">💾 Backup สต๊อก (Excel)</button>
               <button class="btn btn-secondary btn-sm" onclick="document.getElementById('excelUploadInput').click()">📤 อัพโหลด Excel</button>
               <input type="file" id="excelUploadInput" accept=".xlsx,.xls,.csv" style="display:none;" onchange="handleExcelUpload(event)">
               <button class="btn btn-secondary btn-sm" onclick="reloadImportFromDB()">🔄 โหลดจาก Database ใหม่</button>
@@ -1096,12 +1118,19 @@
         <div class="card" style="margin-top:20px;">
           <div class="card-header">
             <h2 class="card-title">📋 ประวัติการนำเข้า<span class="live-indicator"><span class="live-dot"></span>Live</span></h2>
-            <div class="date-filter">
-              <input type="date" id="importHistoryStartDate" class="date-input">
-              <span>ถึง</span>
-              <input type="date" id="importHistoryEndDate" class="date-input">
-              <button id="filterImportHistoryBtn" class="btn btn-primary btn-sm">กรอง</button>
-              <button id="exportImportHistoryBtn" class="btn btn-export btn-sm">📥 Export</button>
+            <div class="import-history-filters">
+              <div class="quick-date-btns">
+                <button class="quick-date-btn active" data-range="today" onclick="setImportHistoryRange('today',this)">วันนี้</button>
+                <button class="quick-date-btn" data-range="yesterday" onclick="setImportHistoryRange('yesterday',this)">เมื่อวาน</button>
+                <button class="quick-date-btn" data-range="week" onclick="setImportHistoryRange('week',this)">7 วัน</button>
+                <button class="quick-date-btn" data-range="all" onclick="setImportHistoryRange('all',this)">ทั้งหมด</button>
+              </div>
+              <div class="date-filter">
+                <input type="date" id="importHistoryStartDate" class="date-input">
+                <span>ถึง</span>
+                <input type="date" id="importHistoryEndDate" class="date-input">
+                <button id="filterImportHistoryBtn" class="btn btn-primary btn-sm">กรอง</button>
+              </div>
             </div>
           </div>
           <div class="table-container">
@@ -1110,6 +1139,7 @@
               <tbody id="importHistoryTable"></tbody>
             </table>
           </div>
+          <div id="importHistoryPagination" class="pagination-bar"></div>
         </div>
       </div>
 
@@ -4736,39 +4766,140 @@
     // ============================================
     // IMPORT STOCK
     // ============================================
+    var allImportHistory = [];
+    var importHistoryPage = 1;
+    var IMPORT_PAGE_SIZE = 30;
+    var importHistoryFilter = { range: 'today' };
+
     function loadImportHistory() {
-      db.ref('imports').orderByChild('timestamp').limitToLast(100).once('value').then(function(snapshot) {
+      db.ref('imports').orderByChild('timestamp').limitToLast(2000).once('value').then(function(snapshot) {
         var imports = [];
         snapshot.forEach(function(child) {
           imports.push(child.val());
         });
         imports.reverse();
-        renderImportHistory(imports);
+        allImportHistory = imports;
+        importHistoryPage = 1;
+        applyImportHistoryFilter();
       });
     }
 
-    function renderImportHistory(imports) {
+    // ตั้งช่วงวันที่แบบด่วน (วันนี้/เมื่อวาน/7วัน/ทั้งหมด)
+    function setImportHistoryRange(range, btn) {
+      importHistoryFilter = { range: range };
+      document.querySelectorAll('.quick-date-btn').forEach(function(b){ b.classList.remove('active'); });
+      if (btn) btn.classList.add('active');
+      // ล้างช่อง date เมื่อใช้ปุ่มด่วน
+      document.getElementById('importHistoryStartDate').value = '';
+      document.getElementById('importHistoryEndDate').value = '';
+      importHistoryPage = 1;
+      applyImportHistoryFilter();
+    }
+
+    function applyImportHistoryFilter() {
+      var filtered = allImportHistory;
+      var startInput = document.getElementById('importHistoryStartDate').value;
+      var endInput = document.getElementById('importHistoryEndDate').value;
+
+      if (startInput || endInput) {
+        // กรองด้วยช่วงวันที่ที่เลือกเอง
+        var start = startInput ? new Date(startInput + 'T00:00:00').getTime() : 0;
+        var end = endInput ? new Date(endInput + 'T23:59:59').getTime() : Date.now();
+        filtered = allImportHistory.filter(function(imp) {
+          var t = new Date(imp.timestamp).getTime();
+          return t >= start && t <= end;
+        });
+      } else {
+        var range = importHistoryFilter.range;
+        if (range !== 'all') {
+          var now = new Date();
+          var startTs, endTs;
+          if (range === 'today') {
+            startTs = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+            endTs = startTs + 86400000;
+          } else if (range === 'yesterday') {
+            endTs = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+            startTs = endTs - 86400000;
+          } else if (range === 'week') {
+            endTs = Date.now();
+            startTs = endTs - 7 * 86400000;
+          }
+          filtered = allImportHistory.filter(function(imp) {
+            var t = new Date(imp.timestamp).getTime();
+            return t >= startTs && t < endTs;
+          });
+        }
+      }
+
+      renderImportHistoryPage(filtered);
+    }
+
+    function renderImportHistoryPage(imports) {
       var tbody = document.getElementById('importHistoryTable');
-      
+      var pag = document.getElementById('importHistoryPagination');
+
       if (!imports || imports.length === 0) {
         tbody.innerHTML = '<tr><td colspan="6" class="text-center">ไม่พบข้อมูล</td></tr>';
+        pag.innerHTML = '';
         return;
       }
-      
+
+      var totalPages = Math.ceil(imports.length / IMPORT_PAGE_SIZE);
+      if (importHistoryPage > totalPages) importHistoryPage = totalPages;
+      var startIdx = (importHistoryPage - 1) * IMPORT_PAGE_SIZE;
+      var pageItems = imports.slice(startIdx, startIdx + IMPORT_PAGE_SIZE);
+
       var html = '';
-      for (var i = 0; i < imports.length; i++) {
-        var imp = imports[i];
+      for (var i = 0; i < pageItems.length; i++) {
+        var imp = pageItems[i];
         html += '<tr>';
         html += '<td>' + formatDateTime(imp.timestamp) + '</td>';
         html += '<td>' + imp.colorCode + '</td>';
-        html += '<td>' + formatSize(imp.width) + ' × ' + formatSize(imp.height) + ' ซม.</td>';
+        html += '<td>' + formatSize(imp.width) + ' × ' + formatSize(imp.height) + ' ม.</td>';
         html += '<td class="qty-change positive">+' + imp.quantity + '</td>';
         html += '<td><span class="import-type-badge ' + imp.importType + '">' + getImportTypeLabel(imp.importType) + '</span></td>';
         html += '<td>' + (imp.importedBy || '-') + '</td>';
         html += '</tr>';
       }
-      
       tbody.innerHTML = html;
+
+      // แถบ pagination
+      renderPaginationBar(pag, imports.length, totalPages);
+    }
+
+    function renderPaginationBar(pag, totalItems, totalPages) {
+      if (totalPages <= 1) {
+        pag.innerHTML = '<span class="pagination-info">ทั้งหมด ' + totalItems + ' รายการ</span>';
+        return;
+      }
+      var p = importHistoryPage;
+      var html = '<span class="pagination-info">' + totalItems + ' รายการ · หน้า ' + p + '/' + totalPages + '</span>';
+      html += '<div class="pagination-btns">';
+      html += '<button class="page-btn" ' + (p<=1?'disabled':'') + ' onclick="gotoImportPage(' + (p-1) + ')">‹ ก่อนหน้า</button>';
+      // เลขหน้า (แสดงรอบ ๆ หน้าปัจจุบัน)
+      var from = Math.max(1, p-2), to = Math.min(totalPages, p+2);
+      if (from > 1) { html += '<button class="page-btn" onclick="gotoImportPage(1)">1</button>'; if(from>2) html+='<span class="page-dots">…</span>'; }
+      for (var n = from; n <= to; n++) {
+        html += '<button class="page-btn' + (n===p?' active':'') + '" onclick="gotoImportPage(' + n + ')">' + n + '</button>';
+      }
+      if (to < totalPages) { if(to<totalPages-1) html+='<span class="page-dots">…</span>'; html += '<button class="page-btn" onclick="gotoImportPage(' + totalPages + ')">' + totalPages + '</button>'; }
+      html += '<button class="page-btn" ' + (p>=totalPages?'disabled':'') + ' onclick="gotoImportPage(' + (p+1) + ')">ถัดไป ›</button>';
+      html += '</div>';
+      pag.innerHTML = html;
+    }
+
+    function gotoImportPage(n) {
+      importHistoryPage = n;
+      applyImportHistoryFilter();
+      // scroll ตารางขึ้นบนสุด
+      var tbl = document.querySelector('#pageImportStock .table-container');
+      if (tbl) tbl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function renderImportHistory(imports) {
+      // เผื่อมีการเรียกจากที่อื่น
+      allImportHistory = imports || [];
+      applyImportHistoryFilter();
     }
 
     function getImportTypeLabel(type) {
@@ -4776,25 +4907,43 @@
       return labels[type] || type;
     }
 
-    function exportImportHistory() {
-      db.ref('imports').orderByChild('timestamp').limitToLast(1000).once('value').then(function(snapshot) {
-        var imports = [];
-        snapshot.forEach(function(child) { imports.push(child.val()); });
-        imports.reverse();
-        if (imports.length === 0) { showToast('ไม่มีข้อมูลให้ export', 'warning'); return; }
-        var csv = '\uFEFF';
-        csv += 'วันที่/เวลา,รหัสผ้าม่าน,กว้าง,สูง,จำนวน,ประเภท,ผู้นำเข้า\n';
-        for (var i = 0; i < imports.length; i++) {
-          var imp = imports[i];
-          csv += imp.timestamp + ',' + imp.colorCode + ',' + imp.width + ',' + imp.height + ',';
-          csv += imp.quantity + ',' + getImportTypeLabel(imp.importType) + ',' + (imp.importedBy || '') + '\n';
-        }
-        var blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
-        var link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = 'import_history_' + new Date().toISOString().split('T')[0] + '.csv';
-        link.click();
-        showToast('Export สำเร็จ', 'success');
+    // Backup: export สต๊อกทั้งหมดเป็น Excel (รูปแบบเดียวกับ template — อัพโหลดกลับได้)
+    function exportAllStock() {
+      var loadingToast = showToast('กำลังดึงข้อมูลสต๊อก...', 'loading', 0);
+      db.ref('stock').once('value').then(function(snapshot) {
+        var data = snapshot.val() || {};
+        var rows = [['รหัสสี', 'กว้าง(ม.)', 'สูง(ม.)', 'จำนวน(ผืน)', 'ประเภทผ้าม่าน', 'การต่อผ้า']];
+        var codes = Object.keys(data).sort(function(a,b){ return a.localeCompare(b,'th',{numeric:true}); });
+        var totalRows = 0;
+        codes.forEach(function(code) {
+          var items = (data[code] && data[code].items) || [];
+          items.forEach(function(it) {
+            rows.push([
+              code,
+              parseFloat(it.width || 0).toFixed(2),
+              parseFloat(it.height || 0).toFixed(2),
+              parseInt(it.quantity || 0),
+              it.type || '',
+              it.seam || 'ไม่ต่อ'
+            ]);
+            totalRows++;
+          });
+        });
+        loadingToast.remove();
+        if (totalRows === 0) { showToast('ไม่มีข้อมูลสต๊อกให้ backup', 'warning'); return; }
+
+        var wb = XLSX.utils.book_new();
+        var ws = XLSX.utils.aoa_to_sheet(rows);
+        ws['!cols'] = [{wch:12},{wch:10},{wch:10},{wch:12},{wch:18},{wch:14}];
+        XLSX.utils.book_append_sheet(wb, ws, 'สต๊อก');
+        var today = new Date();
+        var dateStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+        XLSX.writeFile(wb, 'backup_สต๊อก_' + dateStr + '.xlsx');
+        showToast('✅ Backup สำเร็จ ' + totalRows + ' รายการ (' + codes.length + ' รหัสสี)', 'success', 6000);
+        logActivity('backup_stock', 'Backup สต๊อก ' + totalRows + ' รายการ');
+      }).catch(function(err) {
+        loadingToast.remove();
+        showToast('เกิดข้อผิดพลาด: ' + err.message, 'error');
       });
     }
 
@@ -6001,8 +6150,7 @@
       document.getElementById('todayTxnBtn').addEventListener('click', loadTodayTransactions);
       document.getElementById('filterLogBtn').addEventListener('click', loadActivityLog);
       document.getElementById('toggleStockStatus').addEventListener('change', toggleStockStatus);
-      document.getElementById('filterImportHistoryBtn').addEventListener('click', loadImportHistory);
-      document.getElementById('exportImportHistoryBtn').addEventListener('click', exportImportHistory);
+      document.getElementById('filterImportHistoryBtn').addEventListener('click', function(){ importHistoryPage=1; applyImportHistoryFilter(); });
       document.getElementById('viewGridBtn').addEventListener('click', function() { setProductView('grid'); });
       document.getElementById('viewListBtn').addEventListener('click', function() { setProductView('list'); });
       
