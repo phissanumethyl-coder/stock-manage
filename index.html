@@ -557,10 +557,12 @@
     .sheet-table tbody tr:hover td:not(.row-num){background:#e3f0ff}
     .sheet-del-btn{background:transparent;border:none;color:var(--danger);cursor:pointer;font-size:16px;padding:6px 10px;border-radius:6px}
     .sheet-del-btn:hover{background:#ffe9e7}
+
     .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}
     .modal-overlay.open{display:flex}
+    /* popup ยืนยัน/กรอกข้อมูล ต้องเด้งทับ modal อื่นเสมอ */
+    #appConfirmModal,#appPromptModal{z-index:2000}
     .modal{background:var(--bg-primary);border-radius:var(--radius-xl);width:100%;max-width:500px;max-height:90vh;overflow-y:auto;animation:modalIn .15s ease-out;position:relative}
-    @keyframes modalIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
     @keyframes modalIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
     .modal-header{padding:24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
     .modal-title{font-size:20px;font-weight:600}
