@@ -581,7 +581,20 @@
     .date-input:focus{outline:none;border-color:var(--accent)}
     .empty-state-icon{font-size:48px;margin-bottom:16px;opacity:.5}
     .empty-state h3{font-size:18px;font-weight:500;margin-bottom:8px;color:var(--text-primary)}
-    @media (max-width:768px){.header-content{flex-wrap:wrap;gap:12px}.main-content{padding:16px}.cart-panel{width:calc(100vw - 48px);right:-12px}.product-grid{grid-template-columns:1fr}.stats-grid{grid-template-columns:repeat(2,1fr)}.modal{max-width:calc(100vw - 40px)}}
+    @media (max-width:768px){.header-content{flex-wrap:wrap;gap:12px}.main-content{padding:16px}.cart-panel{width:calc(100vw - 48px);right:-12px}.product-grid{grid-template-columns:1fr}.stats-grid{grid-template-columns:repeat(2,1fr)}.modal{max-width:calc(100vw - 40px)}
+      /* มือถือ: พับ controls เก็บ — แสดงปุ่มเฉพาะ staff/admin */
+      .mobile-controls-toggle{display:none!important}
+      .mobile-controls-toggle.for-controls{display:inline-flex!important;align-items:center;gap:6px;padding:8px 14px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:20px;font-family:inherit;font-size:13px;font-weight:600;color:var(--text-primary);cursor:pointer;order:-1}
+      .mobile-controls-toggle .mct-arrow{transition:transform .25s}
+      .mobile-controls-toggle.expanded .mct-arrow{transform:rotate(180deg)}
+      .header-user{position:relative;gap:8px}
+      /* ซ่อน controls/badge จนกว่าจะกด กาง */
+      #headerStockControls,#onlineUsersBadge{display:none!important}
+      .header-user.controls-open #headerStockControls{display:flex!important;flex-direction:column;align-items:stretch;gap:8px;width:100%;order:10;background:var(--bg-secondary);padding:12px;border-radius:12px;margin-top:4px}
+      .header-user.controls-open #onlineUsersBadge{display:inline-flex!important;order:11}
+      .header-user.controls-open #headerStockControls .btn-sm{width:100%;justify-content:center}
+      .header-stock-controls .stock-toggle-wrapper{justify-content:space-between}
+    }
     .hidden{display:none!important}.text-center{text-align:center}.mt-4{margin-top:16px}.flex{display:flex}.items-center{align-items:center}.gap-2{gap:8px}.gap-4{gap:16px}
     .txn-status{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:500}
     .txn-status.completed{background:rgba(52,199,89,.15);color:#1d8348}
@@ -797,6 +810,8 @@
       <div class="header-content">
         <div class="header-brand"><h1>📦 Stock Manager</h1></div>
         <div class="header-user">
+          <!-- ปุ่มพับ/กาง controls (มือถือเท่านั้น) -->
+          <button id="mobileControlsToggle" class="mobile-controls-toggle" style="display:none;" onclick="toggleMobileControls()">⚙️ ตัวควบคุม <span class="mct-arrow">▾</span></button>
           <!-- Stock controls (staff/admin only) -->
           <div id="headerStockControls" class="header-stock-controls" style="display:none;">
             <div class="stock-toggle-wrapper">
@@ -1937,12 +1952,15 @@
       // Reset state ก่อนเสมอ (กัน state ค้างจาก user เก่า)
       document.getElementById('onlineUsersBadge').style.display = 'none';
       document.getElementById('headerStockControls').style.display = 'none';
+      document.getElementById('mobileControlsToggle').classList.remove('for-controls');
+      document.querySelector('.header-user').classList.remove('controls-open');
       resetSearchState();
 
       // แสดง Online Badge + Stock Controls สำหรับ staff/admin เท่านั้น
       if (currentUser.role === 'staff' || currentUser.role === 'admin') {
         document.getElementById('onlineUsersBadge').style.display = 'inline-flex';
         document.getElementById('headerStockControls').style.display = 'flex';
+        document.getElementById('mobileControlsToggle').classList.add('for-controls');
       }
       
       var firstTab = navConfig[currentUser.role][0];
@@ -3237,6 +3255,14 @@
         var enabled = snapshot.val() === 'TRUE' || snapshot.val() === true;
         document.getElementById('toggleStockStatus').checked = enabled;
       });
+    }
+
+    // พับ/กาง controls บนมือถือ
+    function toggleMobileControls() {
+      var hu = document.querySelector('.header-user');
+      var btn = document.getElementById('mobileControlsToggle');
+      hu.classList.toggle('controls-open');
+      btn.classList.toggle('expanded');
     }
 
     function toggleStockStatus() {
@@ -5125,12 +5151,7 @@
           renderImportTabs(); renderImportGrid();
           return;
         }
-        captureCurrentGrid();
-        importTabs[code] = { rows: [ blankRow() ], dirty: true, isNew: true };
-        currentImportTab = code;
-        renderImportTabs();
-        renderImportGrid();
-        showToast('เพิ่มรหัสสี ' + code + ' แล้ว', 'success');
+
       });
     }
 
@@ -5487,9 +5508,11 @@
         }
       });
 
-      // ลบแท็บที่สั่งลบ
+      // ลบแท็บที่สั่งลบ — ยกเว้นรหัสที่ถูกเพิ่มกลับเข้ามาใหม่ (มีใน dirtyCodes)
       deleteCodes.forEach(function(code) {
-        updates['stock/' + code] = null;
+        if (dirtyCodes.indexOf(code) === -1) {
+          updates['stock/' + code] = null;
+        }
       });
 
       db.ref().update(updates).then(function() {
