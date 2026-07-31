@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ล้างข้อมูลทดสอบ - Stock Manager</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,'Segoe UI',sans-serif}
+    body{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#f8fafc,#eef2f7);padding:20px}
+    .card{background:#fff;border-radius:20px;padding:40px;max-width:560px;width:100%;box-shadow:0 20px 60px rgba(60,80,120,.12)}
+    h1{font-size:22px;margin-bottom:8px;color:#1d1d1f}
+    .sub{color:#6b7280;font-size:14px;margin-bottom:24px}
+    .box{background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:16px;margin-bottom:16px}
+    .box h3{font-size:15px;margin-bottom:10px;color:#374151}
+    .item{display:flex;align-items:center;gap:10px;padding:6px 0;font-size:14px}
+    .del{color:#dc2626}.keep{color:#16a34a}
+    .status{padding:12px 16px;border-radius:10px;margin:16px 0;font-size:14px;display:none}
+    .status.show{display:block}
+    .status.info{background:#eff6ff;color:#1e40af}
+    .status.success{background:#f0fdf4;color:#15803d}
+    .status.error{background:#fef2f2;color:#dc2626}
+    .status.loading{background:#fffbeb;color:#b45309}
+    button{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;transition:.2s;margin-top:8px}
+    .btn-scan{background:#3b82f6;color:#fff}
+    .btn-scan:hover{background:#2563eb}
+    .btn-danger{background:#dc2626;color:#fff}
+    .btn-danger:hover{background:#b91c1c}
+    .btn-danger:disabled{background:#fca5a5;cursor:not-allowed}
+    .count-badge{background:#e0e7ff;color:#4338ca;padding:2px 10px;border-radius:10px;font-size:13px;font-weight:600;margin-left:auto}
+    .warn{background:#fef2f2;border:1px solid #fecaca;color:#991b1b;padding:14px;border-radius:12px;font-size:13px;margin-bottom:16px;line-height:1.6}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>🧹 ล้างข้อมูลทดสอบ</h1>
+    <p class="sub">Stock Manager — เตรียมระบบก่อนใช้งานจริง</p>
+
+    <div class="warn">
+      ⚠️ <b>คำเตือน:</b> การล้างข้อมูลนี้ <b>ถาวร กู้คืนไม่ได้</b> แนะนำให้กด "Backup สต๊อก" ในระบบก่อน (สต๊อกไม่ถูกลบ แต่เผื่อไว้)
+    </div>
+
+    <div class="box">
+      <h3>รายการที่จะลบ</h3>
+      <div class="item del">🗑️ ประวัติการเบิก + จับคู่ออเดอร์ <span class="count-badge" id="cntTxn">-</span></div>
+      <div class="item del">🗑️ ประวัติการนำเข้า <span class="count-badge" id="cntImp">-</span></div>
+    </div>
+
+    <div class="box">
+      <h3>ข้อมูลที่จะเก็บไว้ (ไม่ลบ)</h3>
+      <div class="item keep">✅ ผู้ใช้งาน <span class="count-badge" id="cntUser">-</span></div>
+      <div class="item keep">✅ สต๊อกผ้าม่านทั้งหมด <span class="count-badge" id="cntStock">-</span></div>
+      <div class="item keep">✅ Shart สี (colorChart)</div>
+      <div class="item keep">✅ การตั้งค่าระบบ (config)</div>
+    </div>
+
+    <div id="status" class="status"></div>
+
+    <button id="btnScan" class="btn-scan" onclick="scanData()">🔍 ตรวจสอบข้อมูลก่อน (แนะนำให้กดก่อน)</button>
+    <button id="btnDelete" class="btn-danger" onclick="confirmDelete()" disabled>🗑️ ล้างข้อมูลทดสอบ</button>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script>
+    var firebaseConfig = {
+      apiKey: "AIzaSyAA0nq7NhL-yyrwXMK8NP42rQ-coYUR6u0",
+      authDomain: "stock-manager-2026.firebaseapp.com",
+      databaseURL: "https://stock-manager-2026-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "stock-manager-2026",
+      storageBucket: "stock-manager-2026.firebasestorage.app",
+      messagingSenderId: "10544854273",
+      appId: "1:10544854273:web:6b43b59eb6be89d3ad1700"
+    };
+    firebase.initializeApp(firebaseConfig);
+    var db = firebase.database();
+
+    function showStatus(msg, type) {
+      var el = document.getElementById('status');
+      el.className = 'status show ' + type;
+      el.innerHTML = msg;
+    }
+
+    function countNode(node) {
+      return db.ref(node).once('value').then(function(s) {
+        var v = s.val();
+        return v ? Object.keys(v).length : 0;
+      });
+    }
+
+    function scanData() {
+      showStatus('⏳ กำลังตรวจสอบข้อมูล...', 'loading');
+      Promise.all([
+        countNode('transactions'),
+        countNode('imports'),
+        countNode('users'),
+        countNode('stock')
+      ]).then(function(counts) {
+        document.getElementById('cntTxn').textContent = counts[0] + ' รายการ';
+        document.getElementById('cntImp').textContent = counts[1] + ' รายการ';
+        document.getElementById('cntUser').textContent = counts[2] + ' คน';
+        document.getElementById('cntStock').textContent = counts[3] + ' รหัสสี';
+        showStatus('✅ ตรวจสอบเสร็จ — จะลบประวัติการเบิก <b>' + counts[0] + '</b> รายการ และประวัตินำเข้า <b>' + counts[1] + '</b> รายการ<br>เก็บผู้ใช้ <b>' + counts[2] + '</b> คน และสต๊อก <b>' + counts[3] + '</b> รหัสสีไว้', 'info');
+        document.getElementById('btnDelete').disabled = false;
+      }).catch(function(err) {
+        showStatus('❌ เชื่อมต่อ database ไม่สำเร็จ: ' + err.message, 'error');
+      });
+    }
+
+    function confirmDelete() {
+      var ok1 = confirm('ยืนยันการล้างข้อมูลทดสอบ?\n\n• ลบ: ประวัติการเบิก + จับคู่ออเดอร์\n• ลบ: ประวัติการนำเข้า\n\n• เก็บ: ผู้ใช้งาน + สต๊อก + Shart สี\n\nการลบนี้ถาวร กู้คืนไม่ได้');
+      if (!ok1) return;
+      var typed = prompt('พิมพ์คำว่า  ลบ  เพื่อยืนยันครั้งสุดท้าย:');
+      if (typed !== 'ลบ') {
+        showStatus('ยกเลิกแล้ว (พิมพ์ไม่ตรง)', 'info');
+        return;
+      }
+
+      showStatus('⏳ กำลังล้างข้อมูล...', 'loading');
+      document.getElementById('btnDelete').disabled = true;
+
+      // ลบเฉพาะ transactions และ imports — ไม่แตะ users/stock/colorChart/config
+      Promise.all([
+        db.ref('transactions').remove(),
+        db.ref('imports').remove()
+      ]).then(function() {
+        showStatus('✅ <b>ล้างข้อมูลทดสอบเรียบร้อยแล้ว!</b><br>ประวัติการเบิก จับคู่ออเดอร์ และประวัตินำเข้า ถูกลบหมดแล้ว<br>ผู้ใช้งานและสต๊อกยังอยู่ครบ<br><br>ระบบพร้อมใช้งานจริงแล้วครับ 🎉', 'success');
+      }).catch(function(err) {
+        showStatus('❌ เกิดข้อผิดพลาด: ' + err.message, 'error');
+        document.getElementById('btnDelete').disabled = false;
+      });
+    }
+  </script>
+</body>
+</html>
