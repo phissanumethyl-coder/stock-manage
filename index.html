@@ -1089,7 +1089,7 @@
                 <span id="currentTabCount" class="sheet-current-count"></span>
               </div>
               <div class="sheet-toolbar-right">
-                <button class="btn btn-secondary btn-sm" onclick="sortCurrentTab()">↕️ เรียงตามขนาด</button>
+                <button class="btn btn-secondary btn-sm" onclick="sortCurrentTab()">↕️ เรียงตามขนาด (ทุกรหัส)</button>
                 <button class="btn btn-secondary btn-sm" onclick="addImportRow()">+ เพิ่มแถว</button>
                 <button class="btn btn-secondary btn-sm" onclick="addImportRows(10)">+ 10 แถว</button>
                 <button class="btn btn-warning btn-sm" onclick="renameCurrentTab()">✏️ เปลี่ยนรหัส</button>
@@ -5656,25 +5656,38 @@
       });
     }
 
-    // เรียงตามกว้างน้อย→มาก แล้วสูงน้อย→มาก
+    // เรียงตามกว้างน้อย→มาก แล้วสูงน้อย→มาก (ทุกรหัสสี)
     function sortCurrentTab() {
-      if (!currentImportTab) return;
       captureCurrentGrid();
-      var rows = importTabs[currentImportTab].rows;
-      // เก็บเฉพาะแถวที่มีขนาด (ไม่เอาแถวว่างล้วน)
-      var filled = rows.filter(function(r){ return r.width !== '' || r.height !== '' || r.qty !== '' || r.type !== '' || r.seam !== ''; });
-      filled.sort(function(a, b) {
-        var aw = parseFloat(a.width) || 0, bw = parseFloat(b.width) || 0;
-        if (aw !== bw) return aw - bw;
-        var ah = parseFloat(a.height) || 0, bh = parseFloat(b.height) || 0;
-        return ah - bh;
+      var codes = Object.keys(importTabs);
+      if (codes.length === 0) return;
+
+      var sortedCount = 0;
+      codes.forEach(function(code) {
+        var rows = importTabs[code].rows || [];
+        // เก็บเฉพาะแถวที่มีขนาด (ไม่เอาแถวว่างล้วน)
+        var filled = rows.filter(function(r){ return r.width !== '' || r.height !== '' || r.qty !== '' || r.type !== '' || r.seam !== ''; });
+        if (filled.length <= 1) {
+          // แท็บว่างหรือมีแถวเดียว ไม่ต้องเรียง (แต่คงแถวว่างไว้ถ้าไม่มีข้อมูล)
+          if (filled.length === 0) filled.push(blankRow());
+          importTabs[code].rows = filled;
+          return;
+        }
+        filled.sort(function(a, b) {
+          var aw = parseFloat(a.width) || 0, bw = parseFloat(b.width) || 0;
+          if (aw !== bw) return aw - bw;
+          var ah = parseFloat(a.height) || 0, bh = parseFloat(b.height) || 0;
+          return ah - bh;
+        });
+        importTabs[code].rows = filled;
+        importTabs[code].dirty = true;
+        sortedCount++;
       });
-      if (filled.length === 0) filled.push(blankRow());
-      importTabs[currentImportTab].rows = filled;
+
       markDirty();
       renderImportGrid();
       renderImportTabs();
-      showToast('เรียงลำดับตามขนาดแล้ว', 'success');
+      showToast('✅ เรียงตามขนาดแล้วทุกรหัสสี (' + codes.length + ' รหัส)', 'success');
     }
 
     // ---------- บันทึกทั้งหมด ----------
