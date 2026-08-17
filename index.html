@@ -624,6 +624,7 @@
     }
     .hidden{display:none!important}.text-center{text-align:center}.mt-4{margin-top:16px}.flex{display:flex}.items-center{align-items:center}.gap-2{gap:8px}.gap-4{gap:16px}
     .txn-status{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:500}
+    .bundle-cell{font-weight:600;color:#7c3aed;white-space:nowrap}
     .txn-status.completed{background:rgba(52,199,89,.15);color:#1d8348}
     .txn-status.pending{background:rgba(255,149,0,.15);color:#b45309}
     .txn-status.cancelled{background:rgba(255,59,48,.15);color:#b91c1c}
@@ -1182,7 +1183,7 @@
             </div>
             <button id="clearTxnFiltersBtn" class="btn btn-secondary btn-sm" style="padding:8px 16px;">ล้างตัวกรอง</button>
           </div>
-          <div class="table-container"><table><thead><tr><th>วันที่/เวลา</th><th>ผู้เบิก</th><th>สาขา</th><th>รหัสสี</th><th>ขนาด</th><th>ประเภท</th><th>จำนวน</th><th>สถานะ</th><th>หมายเหตุ</th><th>จัดการ</th></tr></thead><tbody id="transactionsTable"></tbody></table></div>
+          <div class="table-container"><table><thead><tr><th>วันที่/เวลา</th><th>ผู้เบิก</th><th>สาขา</th><th>รหัสสี</th><th>ขนาด</th><th>ประเภท</th><th>จำนวน</th><th>มัดผ้า</th><th>สถานะ</th><th>หมายเหตุ</th><th>จัดการ</th></tr></thead><tbody id="transactionsTable"></tbody></table></div>
         </div>
       </div>
 
@@ -2782,6 +2783,7 @@
     function processWithdrawal(item, transactionId, notes) {
       return new Promise(function(resolve) {
         var itemRef = db.ref('stock/' + item.sheetName + '/items');
+        var qtyBeforeThisWithdraw = null; // ยอดจริงของมัดก่อนหักการเบิกครั้งนี้
         
         // ใช้ transaction เพื่อป้องกัน race condition
         itemRef.transaction(function(items) {
@@ -2801,6 +2803,8 @@
           var currentQty = items[itemIndex].quantity || 0;
           if (currentQty < item.quantity) return; // Abort transaction
           
+          qtyBeforeThisWithdraw = currentQty;
+          
           // ลดจำนวน
           items[itemIndex].quantity = currentQty - item.quantity;
           return items;
@@ -2813,32 +2817,63 @@
             console.log('Transaction aborted - insufficient stock');
             resolve({ success: false, message: 'สต๊อกไม่พอ' });
           } else {
-            // สำเร็จ - บันทึก transaction record
-            var txn = {
-              transactionId: transactionId,
-              timestamp: new Date().toISOString(),
-              username: currentUser.username,
-              displayName: currentUser.displayName,
-              branch: currentUser.branch,
-              colorCode: item.colorCode,
-              width: item.width,
-              height: item.height,
-              type: item.type,
-              quantity: item.quantity,
-              notes: notes,
-              status: 'completed',
-              sheetName: item.sheetName,
-              rowIndex: item.row
-            };
-            
-            db.ref('transactions/' + transactionId).set(txn).then(function() {
-              console.log('Withdrawal success:', item.colorCode, item.width + 'x' + item.height, '-' + item.quantity);
-              resolve({ success: true });
-            }).catch(function(err) {
-              resolve({ success: false, message: err.message });
+            // คำนวณ "ยอดต้นวัน" ของมัดนี้ (วิธี B):
+            // ยอดต้นวัน = ยอดจริงก่อนหักครั้งนี้ + ผลรวมที่เบิกไปแล้ววันนี้จากมัดเดียวกัน (rowIndex)
+            // การคืน/ยกเลิกไม่กระทบ เพราะบวกจากยอดเบิกจริงของวันนี้ ไม่ใช่ยอด stock ปัจจุบัน
+            computeBundleStartOfDay(item.sheetName, item.row, qtyBeforeThisWithdraw).then(function(bundleQty) {
+              var txn = {
+                transactionId: transactionId,
+                timestamp: new Date().toISOString(),
+                username: currentUser.username,
+                displayName: currentUser.displayName,
+                branch: currentUser.branch,
+                colorCode: item.colorCode,
+                width: item.width,
+                height: item.height,
+                type: item.type,
+                quantity: item.quantity,
+                notes: notes,
+                status: 'completed',
+                sheetName: item.sheetName,
+                rowIndex: item.row,
+                bundleQtyBefore: bundleQty // ยอดต้นวันของมัด (freeze)
+              };
+              
+              db.ref('transactions/' + transactionId).set(txn).then(function() {
+                console.log('Withdrawal success:', item.colorCode, item.width + 'x' + item.height, '-' + item.quantity, 'มัดต้นวัน:', bundleQty);
+                resolve({ success: true });
+              }).catch(function(err) {
+                resolve({ success: false, message: err.message });
+              });
             });
           }
         });
+      });
+    }
+
+    // คำนวณยอดต้นวันของมัด (sheetName + rowIndex) สำหรับวันนี้
+    // = ยอดจริงก่อนหักครั้งนี้ + ผลรวมที่เบิกไปแล้ววันนี้จากมัดนี้ (นับเฉพาะรายการที่ยังไม่คืน/ยกเลิก)
+    function computeBundleStartOfDay(sheetName, rowIndex, qtyBeforeThisWithdraw) {
+      return db.ref('transactions').once('value').then(function(snapshot) {
+        var startOfToday = new Date();
+        startOfToday.setHours(0, 0, 0, 0);
+        var startTs = startOfToday.getTime();
+        
+        var withdrawnTodayBefore = 0;
+        var data = snapshot.val() || {};
+        for (var id in data) {
+          var t = data[id];
+          if (t.sheetName !== sheetName) continue;          // เฉพาะรหัสสีเดียวกัน
+          if (t.rowIndex !== rowIndex) continue;            // เฉพาะมัดเดียวกัน
+          if (t.status !== 'completed') continue;           // นับเฉพาะที่ยังเบิกอยู่ (ไม่คืน/ไม่ยกเลิก)
+          var tTs = new Date(t.timestamp).getTime();
+          if (tTs < startTs) continue;                      // เฉพาะวันนี้
+          withdrawnTodayBefore += (t.quantity || 0);        // ผลรวมที่เบิกวันนี้ (ก่อนรายการนี้)
+        }
+        // ยอดต้นวัน = ยอดจริงก่อนหักครั้งนี้ + ที่เบิกไปแล้ววันนี้
+        return qtyBeforeThisWithdraw + withdrawnTodayBefore;
+      }).catch(function() {
+        return qtyBeforeThisWithdraw;
       });
     }
 
@@ -3104,7 +3139,7 @@
       var tbody = document.getElementById('transactionsTable');
       
       if (!transactions || transactions.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="10" class="text-center">ไม่พบข้อมูล</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="11" class="text-center">ไม่พบข้อมูล</td></tr>';
         return;
       }
       
@@ -3123,6 +3158,8 @@
         html += '<td>' + formatSize(txn.width) + ' × ' + formatSize(txn.height) + '</td>';
         html += '<td>' + (txn.type || '-') + '</td>';
         html += '<td>' + txn.quantity + '</td>';
+        // มัดผ้า: ยอดคงเหลือของมัด ณ ตอนเบิก (freeze)
+        html += '<td class="bundle-cell">' + (txn.bundleQtyBefore !== undefined && txn.bundleQtyBefore !== null ? '🧵 ' + txn.bundleQtyBefore : '-') + '</td>';
         html += '<td><span class="txn-status ' + statusClass + '">' + statusLabel + '</span></td>';
         html += '<td>' + (txn.notes || '-') + '</td>';
         html += '<td>';
