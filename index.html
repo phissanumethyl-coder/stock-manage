@@ -5855,26 +5855,7 @@
         }
       });
 
-      db.ref('stock').once('value').then(function(snap) {
-        var latest = snap.val() || {};
-        // กันข้อมูลหายในเคสหลายหน้าต่าง: มัด (bundleId) ที่หน้าต่างอื่นเพิ่งเพิ่ม/คืนใน DB
-        // แต่ไม่มีในสิ่งที่เรากำลังบันทึก → ผนวกกลับ (ไม่ให้ถูกเขียนทับหาย)
-        dirtyCodes.forEach(function(code) {
-          if (!updates['stock/' + code]) return;
-          var latestItems = (latest[code] && latest[code].items) || [];
-          var payloadItems = updates['stock/' + code].items || [];
-          var payloadBundleIds = {};
-          payloadItems.forEach(function(it) { if (it.bundleId) payloadBundleIds[it.bundleId] = true; });
-          latestItems.forEach(function(it) {
-            if (it.bundleId && !payloadBundleIds[it.bundleId] && (it.quantity || 0) > 0) {
-              it.row = payloadItems.length + 2;
-              payloadItems.push(it);
-            }
-          });
-          updates['stock/' + code].items = payloadItems;
-        });
-        return db.ref().update(updates);
-      }).then(function() {
+      db.ref().update(updates).then(function() {
         // push import logs
         var chain = Promise.resolve();
         importLogRecords.forEach(function(rec) {
