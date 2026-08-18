@@ -2571,7 +2571,7 @@
           else if (item.type.indexOf('ม่านสอด') >= 0) cardTypeClass = ' type-ม่านสอด';
         }
         
-        html += '<div class="product-card' + cardTypeClass + '" data-sheet="' + item.sheetName + '" data-row="' + item.row + '" data-code="' + item.colorCode + '" data-width="' + item.width + '" data-height="' + item.height + '" data-type="' + (item.type || '') + '" data-qty="' + item.quantity + '">';
+        html += '<div class="product-card' + cardTypeClass + '" data-sheet="' + item.sheetName + '" data-row="' + item.row + '" data-bundle-id="' + (item.bundleId || '') + '" data-code="' + item.colorCode + '" data-width="' + item.width + '" data-height="' + item.height + '" data-type="' + (item.type || '') + '" data-qty="' + item.quantity + '">';
         
         // Type banner
         if (item.type) {
@@ -2637,6 +2637,7 @@
       var item = {
         sheetName: card.getAttribute('data-sheet'),
         row: parseInt(card.getAttribute('data-row')),
+        bundleId: card.getAttribute('data-bundle-id') || '',
         colorCode: card.getAttribute('data-code'),
         width: card.getAttribute('data-width'),
         height: card.getAttribute('data-height'),
@@ -2648,7 +2649,9 @@
       
       var existingIndex = -1;
       for (var i = 0; i < cart.length; i++) {
-        if (cart[i].sheetName === item.sheetName && cart[i].row === item.row) {
+        // จับคู่ด้วย bundleId ถ้ามี ไม่งั้น fallback row
+        var sameBundle = (item.bundleId && cart[i].bundleId) ? (cart[i].bundleId === item.bundleId) : (cart[i].row === item.row);
+        if (cart[i].sheetName === item.sheetName && sameBundle) {
           existingIndex = i;
           break;
         }
@@ -2789,13 +2792,12 @@
         itemRef.transaction(function(items) {
           if (!items) return items;
           
-          // หา item ตาม row
+          // หา item ตาม bundleId (ถ้ามี) ไม่งั้น fallback row
           var itemIndex = -1;
           for (var i = 0; i < items.length; i++) {
-            if (items[i] && items[i].row === item.row) {
-              itemIndex = i;
-              break;
-            }
+            if (!items[i]) continue;
+            var match = (item.bundleId && items[i].bundleId) ? (items[i].bundleId === item.bundleId) : (items[i].row === item.row);
+            if (match) { itemIndex = i; break; }
           }
           
           if (itemIndex === -1) return items;
@@ -2820,7 +2822,7 @@
             // คำนวณ "ยอดต้นวัน" ของมัดนี้ (วิธี B):
             // ยอดต้นวัน = ยอดจริงก่อนหักครั้งนี้ + ผลรวมที่เบิกไปแล้ววันนี้จากมัดเดียวกัน (rowIndex)
             // การคืน/ยกเลิกไม่กระทบ เพราะบวกจากยอดเบิกจริงของวันนี้ ไม่ใช่ยอด stock ปัจจุบัน
-            computeBundleStartOfDay(item.sheetName, item.row, qtyBeforeThisWithdraw).then(function(bundleQty) {
+            computeBundleStartOfDay(item.sheetName, item.bundleId, item.row, qtyBeforeThisWithdraw).then(function(bundleQty) {
               var txn = {
                 transactionId: transactionId,
                 timestamp: new Date().toISOString(),
@@ -2836,6 +2838,7 @@
                 status: 'completed',
                 sheetName: item.sheetName,
                 rowIndex: item.row,
+                bundleId: item.bundleId || '', // ID ถาวรของมัด (จับคู่ตอนคืน)
                 bundleQtyBefore: bundleQty // ยอดต้นวันของมัด (freeze)
               };
               
@@ -2851,9 +2854,9 @@
       });
     }
 
-    // คำนวณยอดต้นวันของมัด (sheetName + rowIndex) สำหรับวันนี้
+    // คำนวณยอดต้นวันของมัด (bundleId) สำหรับวันนี้
     // = ยอดจริงก่อนหักครั้งนี้ + ผลรวมที่เบิกไปแล้ววันนี้จากมัดนี้ (นับเฉพาะรายการที่ยังไม่คืน/ยกเลิก)
-    function computeBundleStartOfDay(sheetName, rowIndex, qtyBeforeThisWithdraw) {
+    function computeBundleStartOfDay(sheetName, bundleId, rowIndex, qtyBeforeThisWithdraw) {
       return db.ref('transactions').once('value').then(function(snapshot) {
         var startOfToday = new Date();
         startOfToday.setHours(0, 0, 0, 0);
@@ -2864,7 +2867,9 @@
         for (var id in data) {
           var t = data[id];
           if (t.sheetName !== sheetName) continue;          // เฉพาะรหัสสีเดียวกัน
-          if (t.rowIndex !== rowIndex) continue;            // เฉพาะมัดเดียวกัน
+          // จับคู่มัดด้วย bundleId ถ้ามี ไม่งั้น fallback rowIndex
+          var sameBundle = (bundleId && t.bundleId) ? (t.bundleId === bundleId) : (t.rowIndex === rowIndex);
+          if (!sameBundle) continue;
           if (t.status !== 'completed') continue;           // นับเฉพาะที่ยังเบิกอยู่ (ไม่คืน/ไม่ยกเลิก)
           var tTs = new Date(t.timestamp).getTime();
           if (tTs < startTs) continue;                      // เฉพาะวันนี้
@@ -3307,20 +3312,36 @@
         
         // ใช้ transaction เพื่อป้องกัน race condition
         itemRef.transaction(function(items) {
-          if (!items) return items;
+          if (!items) items = [];
           
-          // หา item ตาม row
+          // หา item ตาม bundleId (ถ้ามี) ไม่งั้น fallback row
           var itemIndex = -1;
           for (var i = 0; i < items.length; i++) {
-            if (items[i] && items[i].row === txn.rowIndex) {
-              itemIndex = i;
-              break;
-            }
+            if (!items[i]) continue;
+            var match = (txn.bundleId && items[i].bundleId) ? (items[i].bundleId === txn.bundleId) : (items[i].row === txn.rowIndex);
+            if (match) { itemIndex = i; break; }
           }
           
-          if (itemIndex === -1) return items;
+          if (itemIndex === -1) {
+            // มัดเดิมถูกลบไปแล้ว → สร้างมัดใหม่กลับมา (ผ้าที่คืนจะไม่หาย และไม่ไปทับมัดอื่น)
+            var maxRow = 1;
+            for (var j = 0; j < items.length; j++) {
+              if (items[j] && items[j].row > maxRow) maxRow = items[j].row;
+            }
+            items.push({
+              row: maxRow + 1,
+              bundleId: txn.bundleId || ('b' + Date.now().toString(36) + Math.random().toString(36).substr(2,6)),
+              colorCode: txn.colorCode,
+              width: parseFloat(txn.width),
+              height: parseFloat(txn.height),
+              quantity: txn.quantity,
+              type: txn.type || '',
+              seam: txn.seam || 'ไม่ต่อ'
+            });
+            return items;
+          }
           
-          // เพิ่มจำนวนคืน
+          // เพิ่มจำนวนคืนเข้ามัดเดิม
           items[itemIndex].quantity = (items[itemIndex].quantity || 0) + txn.quantity;
           return items;
           
@@ -4271,18 +4292,25 @@
       var sheetName = order.sheetName || order.colorCode;
       var itemRef = db.ref('stock/' + sheetName + '/items');
       var targetRow = order.rowIndex; // rowIndex ที่บันทึกไว้ตอนเบิก
+      var targetBundle = order.bundleId; // bundleId ที่บันทึกไว้ตอนเบิก
 
       // ใช้ Firebase transaction เพื่อป้องกัน race condition (คืนหลายรายการรหัสเดียวกันพร้อมกัน)
       itemRef.transaction(function(items) {
         if (!items) return items;
         var idx = -1;
-        // 1) จับคู่ด้วย row ก่อน (แม่นยำที่สุด รองรับขนาดซ้ำ)
-        if (targetRow !== undefined && targetRow !== null) {
+        // 1) จับคู่ด้วย bundleId ก่อน (ID ถาวร แม่นที่สุด)
+        if (targetBundle) {
+          for (var b = 0; b < items.length; b++) {
+            if (items[b] && items[b].bundleId === targetBundle) { idx = b; break; }
+          }
+        }
+        // 2) ถ้าไม่เจอ ให้ fallback จับคู่ด้วย row
+        if (idx === -1 && targetRow !== undefined && targetRow !== null) {
           for (var i = 0; i < items.length; i++) {
             if (items[i] && items[i].row === targetRow) { idx = i; break; }
           }
         }
-        // 2) ถ้าไม่เจอ row ให้ fallback จับคู่ด้วยขนาด
+        // 3) ถ้ายังไม่เจอ fallback จับคู่ด้วยขนาด
         if (idx === -1) {
           for (var j = 0; j < items.length; j++) {
             if (items[j] &&
@@ -5334,6 +5362,7 @@
           var items = stockData.items || [];
           var rows = items.map(function(it) {
             return {
+              bundleId: it.bundleId || genBundleId(), // เก็บ ID เดิม หรือสร้างใหม่ให้ข้อมูลเก่า
               width: (it.width !== undefined && it.width !== null && it.width !== '') ? parseFloat(it.width).toFixed(2) : '',
               height: (it.height !== undefined && it.height !== null && it.height !== '') ? parseFloat(it.height).toFixed(2) : '',
               qty: (it.quantity !== undefined && it.quantity !== null) ? String(it.quantity) : '',
@@ -5494,8 +5523,12 @@
     var pendingDeleteCodes = {};
 
     // ---------- Grid ----------
+    function genBundleId() {
+      return 'b' + Date.now().toString(36) + Math.random().toString(36).substr(2, 6);
+    }
+
     function blankRow() {
-      return { width: '', height: '', qty: '', type: '', seam: '' };
+      return { bundleId: genBundleId(), width: '', height: '', qty: '', type: '', seam: '' };
     }
 
     function renderImportGrid() {
@@ -5530,7 +5563,7 @@
       SEAM_TYPES.forEach(function(s) {
         seamOpts += '<option value="' + s + '"' + (row.seam === s ? ' selected' : '') + '>' + s + '</option>';
       });
-      return '<tr data-idx="' + i + '">' +
+      return '<tr data-idx="' + i + '" data-bundle-id="' + attr(row.bundleId || '') + '">' +
         '<td class="row-num">' + (i + 1) + '</td>' +
         '<td><input class="sheet-cell col-width" type="text" inputmode="decimal" placeholder="-" value="' + attr(row.width) + '"></td>' +
         '<td><input class="sheet-cell col-height" type="text" inputmode="decimal" placeholder="-" value="' + attr(row.height) + '"></td>' +
@@ -5552,7 +5585,9 @@
       var trs = body.querySelectorAll('tr');
       var rows = [];
       trs.forEach(function(tr) {
+        var bid = tr.getAttribute('data-bundle-id');
         rows.push({
+          bundleId: (bid && bid !== '') ? bid : genBundleId(),
           width: tr.querySelector('.col-width').value.trim(),
           height: tr.querySelector('.col-height').value.trim(),
           qty: tr.querySelector('.col-qty').value.trim(),
@@ -5753,6 +5788,7 @@
           }
           items.push({
             row: items.length + 2,
+            bundleId: r.bundleId || genBundleId(), // ID ถาวรของมัด (ไม่เปลี่ยนแม้ลบ/จัดเรียง)
             colorCode: code,
             width: parseFloat(r.width),
             height: parseFloat(r.height),
