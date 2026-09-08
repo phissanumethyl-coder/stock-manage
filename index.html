@@ -3379,11 +3379,36 @@
       btn.classList.toggle('expanded');
     }
 
+    // ============================================
+    // LINE NOTIFICATION (ผ่าน Google Apps Script)
+    // ============================================
+    // วาง URL ของ Google Apps Script Web App ที่ deploy แล้วตรงนี้
+    var LINE_NOTIFY_URL = 'https://script.google.com/macros/s/AKfycbyMu2cES6ddBY45YfxiVCWJHQjdaF1YjN3JshZsQ57utEDkjFkCcoubTLTDgABo6Zk52g/exec';
+
+    function notifyLineStockStatus(enabled, byWho) {
+      if (!LINE_NOTIFY_URL || LINE_NOTIFY_URL === 'PASTE_YOUR_APPS_SCRIPT_URL_HERE') return; // ยังไม่ตั้งค่า = ข้าม
+      var now = new Date();
+      var timeStr = now.toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' });
+      var msg = enabled
+        ? '🟢 เปิดให้เบิกผ้าม่านแล้ว\n⏰ ' + timeStr + (byWho ? '\n👤 โดย ' + byWho : '')
+        : '🔴 ปิดการเบิกผ้าม่านแล้ว\n⏰ ' + timeStr + (byWho ? '\n👤 โดย ' + byWho : '');
+      // ยิงแบบ fire-and-forget (ไม่รอผล ไม่กระทบความเร็วเว็บ) — no-cors กัน CORS error
+      try {
+        fetch(LINE_NOTIFY_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ message: msg })
+        }).catch(function(){});
+      } catch (e) {}
+    }
+
     function toggleStockStatus() {
       var enabled = document.getElementById('toggleStockStatus').checked;
       db.ref('config/STOCK_ENABLED').set(enabled ? 'TRUE' : 'FALSE').then(function() {
         showToast(enabled ? '🟢 เปิดการเบิกแล้ว' : '⚫ ปิดการเบิกแล้ว', enabled ? 'success' : 'dark');
         logActivity('toggle_stock', enabled ? 'เปิดการเบิก' : 'ปิดการเบิก');
+        notifyLineStockStatus(enabled, currentUser ? currentUser.displayName : '');
       });
     }
 
@@ -3486,6 +3511,7 @@
         document.getElementById('toggleStockStatus').checked = false;
         showToast('⏰ ระบบปิดการเบิกอัตโนมัติแล้ว', 'warning');
         logActivity('auto_close_executed', 'ระบบปิดการเบิกอัตโนมัติเวลา ' + autoCloseTime + ' น.');
+        notifyLineStockStatus(false, 'ระบบ (ปิดอัตโนมัติ)');
         
         // ตั้ง timer สำหรับวันถัดไป
         if (autoCloseTime) {
