@@ -3505,15 +3505,27 @@
     }
 
     function executeAutoClose() {
-      // ปิดการเบิกอัตโนมัติ
-      db.ref('config/STOCK_ENABLED').set('FALSE').then(function() {
+      // ใช้ transaction เป็นล็อค: เครื่องแรกที่เปลี่ยน TRUE→FALSE เท่านั้นที่ยิง LINE
+      // (กันหลาย client ยิงซ้ำตอนปิดอัตโนมัติพร้อมกัน)
+      db.ref('config/STOCK_ENABLED').transaction(function(current) {
+        if (current === 'FALSE' || current === false) {
+          return; // ถูกปิดไปแล้วโดยเครื่องอื่น → abort (ไม่ยิงซ้ำ)
+        }
+        return 'FALSE'; // เราเป็นคนปิด
+      }, function(error, committed, snapshot) {
+        // อัพเดต UI ทุกเครื่อง (ไม่ว่าใครเป็นคนปิด)
         stockEnabled = false;
-        document.getElementById('toggleStockStatus').checked = false;
-        showToast('⏰ ระบบปิดการเบิกอัตโนมัติแล้ว', 'warning');
-        logActivity('auto_close_executed', 'ระบบปิดการเบิกอัตโนมัติเวลา ' + autoCloseTime + ' น.');
-        notifyLineStockStatus(false, 'ระบบ (ปิดอัตโนมัติ)');
-        
-        // ตั้ง timer สำหรับวันถัดไป
+        var toggleEl = document.getElementById('toggleStockStatus');
+        if (toggleEl) toggleEl.checked = false;
+
+        if (!error && committed) {
+          // เฉพาะเครื่องที่ปิดสำเร็จจริง (TRUE→FALSE) เท่านั้น — ยิง LINE + log ครั้งเดียว
+          showToast('⏰ ระบบปิดการเบิกอัตโนมัติแล้ว', 'warning');
+          logActivity('auto_close_executed', 'ระบบปิดการเบิกอัตโนมัติเวลา ' + autoCloseTime + ' น.');
+          notifyLineStockStatus(false, 'ระบบ (ปิดอัตโนมัติ)');
+        }
+
+        // ตั้ง timer สำหรับวันถัดไป (ทุกเครื่องตั้งของตัวเอง)
         if (autoCloseTime) {
           startAutoCloseTimer(autoCloseTime);
         }
