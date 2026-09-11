@@ -3505,6 +3505,8 @@
     }
 
     function executeAutoClose() {
+      // safety net: เฉพาะ admin/staff เท่านั้นที่รันปิดอัตโนมัติได้
+      if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'staff')) return;
       // ใช้ transaction เป็นล็อค: เครื่องแรกที่เปลี่ยน TRUE→FALSE เท่านั้นที่ยิง LINE
       // (กันหลาย client ยิงซ้ำตอนปิดอัตโนมัติพร้อมกัน)
       db.ref('config/STOCK_ENABLED').transaction(function(current) {
@@ -3533,6 +3535,8 @@
     }
 
     function initAutoClose() {
+      // ปิดอัตโนมัติทำงานเฉพาะ admin/staff เท่านั้น — ฝ่ายขายไม่ต้องมี timer
+      if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'staff')) return;
       db.ref('config/AUTO_CLOSE_TIME').once('value').then(function(snapshot) {
         var time = snapshot.val();
         if (time) {
