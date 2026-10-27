@@ -5600,23 +5600,44 @@
     }
 
     function buildRowHtml(row, i) {
+      // ตรวจว่า type เป็นประเภทมาตรฐานไหม — ถ้าไม่ใช่และไม่ว่าง = ประเภท "อื่นๆ" (ระบุเอง)
+      var isStandard = (row.type === '' || CURTAIN_TYPES.indexOf(row.type) >= 0);
+      var isCustom = (!isStandard);
       var typeOpts = '<option value="">— เลือก —</option>';
       CURTAIN_TYPES.forEach(function(t) {
         typeOpts += '<option value="' + t + '"' + (row.type === t ? ' selected' : '') + '>' + t + '</option>';
       });
+      typeOpts += '<option value="__OTHER__"' + (isCustom ? ' selected' : '') + '>อื่นๆ (ระบุเอง)</option>';
       var seamOpts = '';
       SEAM_TYPES.forEach(function(s) {
         seamOpts += '<option value="' + s + '"' + (row.seam === s ? ' selected' : '') + '>' + s + '</option>';
       });
+      // ช่องกรอกรายละเอียดเอง — แสดงเมื่อเลือกอื่นๆ (ค่าที่กรอก = type)
+      var customVal = isCustom ? attr(row.type) : '';
+      var customInput = '<input class="sheet-cell col-custom-type" type="text" placeholder="ระบุประเภท เช่น ตัดเฉียง, ตาไก่ 4 ด้าน" value="' + customVal + '" style="margin-top:4px;' + (isCustom ? '' : 'display:none;') + '">';
       return '<tr data-idx="' + i + '" data-bundle-id="' + attr(row.bundleId || '') + '">' +
         '<td class="row-num">' + (i + 1) + '</td>' +
         '<td><input class="sheet-cell col-width" type="text" inputmode="decimal" placeholder="-" value="' + attr(row.width) + '"></td>' +
         '<td><input class="sheet-cell col-height" type="text" inputmode="decimal" placeholder="-" value="' + attr(row.height) + '"></td>' +
         '<td><input class="sheet-cell col-qty" type="text" inputmode="numeric" placeholder="-" value="' + attr(row.qty) + '"></td>' +
-        '<td><select class="sheet-cell col-type">' + typeOpts + '</select></td>' +
+        '<td><select class="sheet-cell col-type" onchange="onImportTypeChange(this)">' + typeOpts + '</select>' + customInput + '</td>' +
         '<td><select class="sheet-cell col-seam">' + seamOpts + '</select></td>' +
         '<td class="del-cell"><button type="button" class="sheet-del-btn" onclick="deleteImportRow(' + i + ')">✕</button></td>' +
         '</tr>';
+    }
+
+    // เมื่อเปลี่ยน dropdown ประเภท — แสดง/ซ่อนช่องระบุเอง
+    function onImportTypeChange(sel) {
+      var td = sel.parentElement;
+      var customInput = td.querySelector('.col-custom-type');
+      if (!customInput) return;
+      if (sel.value === '__OTHER__') {
+        customInput.style.display = '';
+        customInput.focus();
+      } else {
+        customInput.style.display = 'none';
+        customInput.value = '';
+      }
     }
 
     function attr(v) { return (v === undefined || v === null) ? '' : String(v).replace(/"/g, '&quot;'); }
@@ -5631,12 +5652,18 @@
       var rows = [];
       trs.forEach(function(tr) {
         var bid = tr.getAttribute('data-bundle-id');
+        // ประเภทผ้าม่าน: ถ้าเลือก "อื่นๆ" ให้ใช้ค่าที่กรอกในช่องระบุเอง
+        var typeVal = tr.querySelector('.col-type').value;
+        if (typeVal === '__OTHER__') {
+          var customEl = tr.querySelector('.col-custom-type');
+          typeVal = customEl ? customEl.value.trim() : '';
+        }
         rows.push({
           bundleId: (bid && bid !== '') ? bid : genBundleId(),
           width: tr.querySelector('.col-width').value.trim(),
           height: tr.querySelector('.col-height').value.trim(),
           qty: tr.querySelector('.col-qty').value.trim(),
-          type: tr.querySelector('.col-type').value,
+          type: typeVal,
           seam: tr.querySelector('.col-seam').value
         });
       });
